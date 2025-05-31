@@ -6,3 +6,8 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.aliasor-error input {
+    border: 1.5px solid #e74c3c !important;
+    color: #e74c3c !important;
+}
