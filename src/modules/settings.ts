@@ -107,6 +107,9 @@ class AliasorSettingsTab extends PluginSettingTab {
 
         aliasManagementDiv.empty();
         aliasManagementDiv.createEl("h1", { text: "Alias Management" });
+
+        this._displayAddAliasTile(aliasManagementDiv);
+
         aliasManagementDiv.createEl("h2", { text: "Sort & Filter" });
         this._displaySortTile(aliasManagementDiv);
         this._displayFilterTile(aliasManagementDiv);
@@ -251,6 +254,30 @@ class AliasorSettingsTab extends PluginSettingTab {
             // Remove error class on success
             setErrorColor(false);
         };
+    }
+
+    private _displayAddAliasTile(parentDiv: HTMLElement): void {
+        new Setting(parentDiv)
+            .setName("Add New Alias")
+            .setDesc("Add a new alias for a command.")
+            .addButton((btn) => {
+                btn.setButtonText("Select Command").onClick(() => {
+                    this.p.modules.commands.selectCommandByModal((command) => {
+                        if (!command) return;
+                        const alias = command.id;
+                        // Prevent duplicate alias
+                        if (this.settingsModule.settings.aliases[alias]) {
+                            // Optionally show a notice here
+                            return;
+                        }
+                        this.settingsModule.settings.aliases[alias] =
+                            command.id;
+                        this.settingsModule.saveSettings().then(() => {
+                            this.displayAliasTiles(parentDiv);
+                        });
+                    });
+                });
+            });
     }
 
     private _displaySortTile(parentDiv?: HTMLElement): void {
