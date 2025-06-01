@@ -92,15 +92,15 @@ class AliasorSettingsTab extends PluginSettingTab {
     /**
      * Display the alias management section (title, sort/filter, and alias tiles) in a container div.
      */
-    private displayAliasManagement(): void {
-        const { containerEl } = this;
+    private displayAliasManagement(parentDiv?: HTMLElement): void {
+        const container = parentDiv ?? this.containerEl;
 
         // Create or get the main alias management container
-        let aliasManagementDiv = containerEl.querySelector(
+        let aliasManagementDiv = container.querySelector(
             ".aliasor-alias-management",
         ) as HTMLElement | null;
         if (!aliasManagementDiv) {
-            aliasManagementDiv = containerEl.createDiv({
+            aliasManagementDiv = container.createDiv({
                 cls: "aliasor-alias-management",
             });
         }
@@ -173,11 +173,28 @@ class AliasorSettingsTab extends PluginSettingTab {
         parentDiv?: HTMLElement,
     ): void {
         const containerEl = parentDiv ?? this.containerEl;
+
+        // Create a new setting for the alias
         new Setting(containerEl)
             .setName(commandId)
             .addText((text) => {
+                const changeHandler = this._aliasChangeHandler(
+                    alias,
+                    commandId,
+                    text,
+                );
+
                 text.setValue(alias);
-                text.onChange(this._aliasChangeHandler(alias, commandId, text));
+                // use changeHandler to check everytime when input changes
+                // but not update the value until blurred
+                text.onChange((newAlias) => {
+                    changeHandler(newAlias, false);
+                });
+                // add event listener to the input element to handle alias change
+                // when input is blurred
+                text.inputEl.addEventListener("blur", () => {
+                    changeHandler(text.inputEl.value, true);
+                });
             })
             .addButton((btn) => {
                 btn.setButtonText("Delete").onClick(async () => {
@@ -207,7 +224,8 @@ class AliasorSettingsTab extends PluginSettingTab {
                 }
             }
         }
-        return async (newAlias: string) => {
+
+        return async (newAlias: string, update = false) => {
             // Remove error class by default
             setErrorColor(false);
             if (!newAlias || newAlias.trim() === "") {
@@ -221,6 +239,10 @@ class AliasorSettingsTab extends PluginSettingTab {
                 setErrorColor(true);
                 return;
             }
+            if (!update) {
+                return;
+            }
+
             // Update alias
             this.settingsModule.settings.aliases[newAlias] = value;
             delete this.settingsModule.settings.aliases[prevAlias];
@@ -249,7 +271,7 @@ class AliasorSettingsTab extends PluginSettingTab {
                     this.sortAscend ? "Ascend" : "Descend",
                 ).onClick(() => {
                     this.sortAscend = !this.sortAscend;
-                    this.displayAliasTiles(parentDiv);
+                    this.displayAliasManagement();
                 });
             });
     }
