@@ -5,6 +5,7 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin } from "obsidian";
 import { SettingsModule } from "@/modules/settings";
 import { UtilModule } from "@/modules/util";
 import { CommandsModule } from "@/modules/commands";
+import { ErrorUtilModule } from "@/modules/errors";
 
 // Remember to rename these classes and interfaces!
 
@@ -14,6 +15,7 @@ export default class AliasorPlugin extends Plugin {
         settings: new SettingsModule(this),
         utils: new UtilModule(this),
         commands: new CommandsModule(this),
+        errors: new ErrorUtilModule(this),
     };
 
     // onload all modules
