@@ -1,8 +1,9 @@
-import { FuzzySuggestModal } from "obsidian";
+import { FuzzySuggestModal, Notice } from "obsidian";
 import type { App, Command, FuzzyMatch } from "obsidian";
 import { AliasorModule } from "@/modules/general";
 import AliasorPlugin from "@/main";
 import { AliasInfo } from "./settings";
+import { AliasorFuzzySuggestModal } from "@/modals/general";
 
 interface ObsidianCommandAPI {
     commands: Record<string, Command>;
@@ -59,11 +60,14 @@ export class CommandsModule extends AliasorModule {
             this.p,
             (aliasInfo: AliasInfo) => {
                 if (aliasInfo.commandId === undefined) {
+                    new Notice(
+                        `Command ID for alias "${aliasInfo.alias}" is not defined.`,
+                    );
                     return;
                 }
                 this.executeCommandById(aliasInfo.commandId);
             },
-            "Select an alias to execute",
+            "Select an alias to execute...",
         ).open();
     }
 }
@@ -100,15 +104,8 @@ class SelectCommandSuggestModal extends FuzzySuggestModal<Command> {
     }
 }
 
-class SelectAliasedCommandSuggestModal extends FuzzySuggestModal<AliasInfo> {
-    constructor(
-        protected p: AliasorPlugin,
-        protected cb: (command: AliasInfo) => void,
-        protected msg?: string,
-    ) {
-        super(p.app);
-        this.setPlaceholder(msg ?? "Enter an alias...");
-    }
+class SelectAliasedCommandSuggestModal extends AliasorFuzzySuggestModal<AliasInfo> {
+    placeholder = "Enter an alias...";
 
     renderSuggestion(item: FuzzyMatch<AliasInfo>, el: HTMLElement): void {
         el.createEl("div", {
@@ -125,11 +122,5 @@ class SelectAliasedCommandSuggestModal extends FuzzySuggestModal<AliasInfo> {
 
     getItemText(item: AliasInfo): string {
         return item.alias;
-    }
-
-    onChooseItem(item: AliasInfo): void {
-        if (item) {
-            this.cb(item);
-        }
     }
 }

@@ -1,6 +1,6 @@
 // Entry point for the plugin
 // All code from main.ts moved here
-import { App, Editor, MarkdownView, Modal, Notice, Plugin } from "obsidian";
+import { Plugin } from "obsidian";
 
 import { SettingsModule } from "@/modules/settings";
 import { UtilModule } from "@/modules/util";

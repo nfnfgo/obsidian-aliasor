@@ -2,10 +2,9 @@
     "id": "obsidian-aliasor",
     "name": "Aliasor",
     "version": "1.0.0",
-    "minAppVersion": "0.15.0",
-    "description": "Add alias for your commonly used commands and execute it quickly.",
+    "minAppVersion": "1.8.10",
+    "description": "Add alias for commonly used commands and execute it quickly.",
     "author": "nfnfgo",
-    "authorUrl": "https://obsidian.md",
-    "fundingUrl": "https://obsidian.md/pricing",
+    "authorUrl": "https://github.com/nfnfgo",
     "isDesktopOnly": false
 }
