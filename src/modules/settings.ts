@@ -1,11 +1,18 @@
 import type { App, Command } from "obsidian";
-import { PluginSettingTab, Setting, TextComponent, Modal } from "obsidian";
+import {
+    PluginSettingTab,
+    Setting,
+    TextComponent,
+    Modal,
+    Notice,
+} from "obsidian";
 
 import AliasorPlugin from "@/main";
 import { AliasorError } from "@/errors/general";
 
 import { AliasorModule } from "./general";
 import { UtilModule } from "./util";
+import { assert } from "console";
 
 interface AliasorSettings {
     version: 1;
@@ -129,8 +136,10 @@ export class SettingsModule extends AliasorModule {
                 "Alias and command ID must be provided.",
             );
         }
-        if (this.settings.aliases[alias]) {
-            throw new SettingUpdateError(`Alias "${alias}" already used.`);
+        if (!this.isValidNewAlias(alias)) {
+            throw new SettingUpdateError(
+                `Alias "${alias}" is invalid or already used.`,
+            );
         }
         if (check && !this.p.modules.commands.getCommandById(commandId)) {
             throw new SettingUpdateError(
@@ -153,13 +162,36 @@ export class SettingsModule extends AliasorModule {
         await this.saveSettings();
     }
 
-    // TODO
-    addNewAliasCommandHandler() {
+    addNewAliasCommandHandler(onSuccess?: () => any): void {
         let selectedCommand: Command | undefined = undefined;
+
+        const newAliasEnteredHandler = async (newAlias: string | undefined) => {
+            try {
+                await this.addAlias({
+                    alias: newAlias as string,
+                    commandId: (selectedCommand as Command).id,
+                    check: true,
+                });
+                new Notice("Alias added: " + newAlias);
+                onSuccess?.();
+            } catch (e) {
+                this.p.modules.errors.errorHandler({ error: e });
+            }
+        };
+
         this.p.modules.commands.selectCommandByModal(async (command) => {
-            if (!command) return;
+            if (!command) {
+                new Notice("No command selected.");
+                return;
+            }
             selectedCommand = command;
             // use a new modal to get the alias from the user
+            new NewAliasInputModal({
+                app: this.a,
+                module: this,
+                commandName: command.name,
+                onSubmit: newAliasEnteredHandler,
+            }).open();
         });
     }
 
@@ -180,11 +212,15 @@ export class SettingsModule extends AliasorModule {
      * which will change input color to red if the input alias
      * already exist.
      */
-    addInvalidNewAliasIndicatorToInput(text: TextComponent): void {
+    addInvalidNewAliasIndicatorToInput(
+        text: TextComponent,
+        original?: AliasInfo | undefined,
+    ): void {
         const inputEl = text.inputEl;
         text.onChange(() => {
-            console.log("On change triggered");
-            if (!this.isValidNewAlias(inputEl.value)) {
+            if (original && inputEl.value === original.alias) {
+                inputEl.parentElement?.classList.remove("aliasor-error");
+            } else if (!this.isValidNewAlias(inputEl.value)) {
                 inputEl.parentElement?.classList.add("aliasor-error");
             } else {
                 inputEl.parentElement?.classList.remove("aliasor-error");
@@ -332,7 +368,10 @@ class AliasorSettingsTab extends PluginSettingTab {
             .setDesc(info.commandId ?? "[unknown-command-id]")
             .addText((text) => {
                 text.setValue(info.alias);
-                this.settingsModule.addInvalidNewAliasIndicatorToInput(text);
+                this.settingsModule.addInvalidNewAliasIndicatorToInput(
+                    text,
+                    info,
+                );
                 text.inputEl.addEventListener("blur", () => {
                     this.settingsModule.updateAlias(
                         info.alias,
@@ -378,23 +417,9 @@ class AliasorSettingsTab extends PluginSettingTab {
                 btn.setCta()
                     .setButtonText("New")
                     .onClick(() => {
-                        this.p.modules.commands.selectCommandByModal(
-                            async (command) => {
-                                if (!command) return;
-                                const alias = command.id;
-                                // Prevent duplicate alias
-                                if (
-                                    this.settingsModule.settings.aliases[alias]
-                                ) {
-                                    // Optionally show a notice here
-                                    return;
-                                }
-                                this.settingsModule.settings.aliases[alias] =
-                                    command.id;
-                                await this.settingsModule.saveSettings();
-                                this.displayAliasTiles(parentDiv);
-                            },
-                        );
+                        this.settingsModule.addNewAliasCommandHandler(() => {
+                            this.displayAliasTiles(parentDiv);
+                        });
                     });
             });
     }
@@ -439,34 +464,58 @@ class AliasorSettingsTab extends PluginSettingTab {
     }
 }
 
+interface NewAliasInputModalProps {
+    app: App;
+    module: SettingsModule;
+    onSubmit: (alias: string) => any;
+    commandName?: string;
+}
+
 class NewAliasInputModal extends Modal {
     onSubmit: (alias: string) => any;
+    protected settingsModule: SettingsModule;
+    protected commandName?: string;
+    protected aliasInput: TextComponent;
 
-    constructor(
-        app: App,
-        onSubmit: (alias: string) => any,
-        commandName?: string,
-    ) {
+    constructor({
+        app,
+        module,
+        onSubmit,
+        commandName,
+    }: NewAliasInputModalProps) {
         super(app);
         this.onSubmit = onSubmit;
+        this.settingsModule = module;
+        this.commandName = commandName;
+
         const { contentEl } = this;
         contentEl.createEl("h2", { text: "Enter Alias" });
         contentEl.createEl("p", {
-            text: `Please enter a new alias for the command ${commandName ?? ""}`,
+            text: `Please enter a new alias for the command ${this.commandName ?? ""}`,
         });
 
-        // TODO
-        new Setting(this.contentEl)
-            .setName("Name")
-            .addText((text) => text.onChange((value) => {}));
+        const handleSubmit = (alias: string) => {
+            this.onSubmit(alias);
+            this.close();
+        };
+
+        // show red input when alias invalid
+        new Setting(this.contentEl).setName("New Alias").addText((text) => {
+            this.settingsModule.addInvalidNewAliasIndicatorToInput(text);
+            this.aliasInput = text;
+            this.aliasInput.inputEl.onsubmit = () => {
+                const alias = this.aliasInput.getValue().trim();
+                handleSubmit(alias);
+            };
+        });
 
         new Setting(contentEl)
-            // .addButton((btn) => {
-            //     btn.setCta();
-            //     btn.setButtonText("OK").onClick(() => {
-            //         this.onSubmit(this.aliasInput.getValue().trim());
-            //     });
-            // })
+            .addButton((btn) => {
+                btn.setCta();
+                btn.setButtonText("OK").onClick(() => {
+                    handleSubmit(this.aliasInput.getValue().trim());
+                });
+            })
             .addButton((btn) => {
                 btn.setButtonText("Cancel").onClick(() => {
                     this.close();

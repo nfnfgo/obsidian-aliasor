@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
 import { AliasorModule } from "@/modules/general";
-import { getReadableErrorMsg } from "@/errors/general";
+import { AliasorError, getReadableErrorMsg } from "@/errors/general";
 
 interface ErrorHandlerParams {
     error: Error;
@@ -20,6 +20,9 @@ export class ErrorUtilModule extends AliasorModule {
     /**
      * Handles errors in a consistent way across the plugin
      *
+     * Error will only be logged to console if it's not an instance of `AliasorError`
+     * and `consoleLog == true`.
+     *
      * @example
      * ```typescript
      * try{
@@ -31,19 +34,21 @@ export class ErrorUtilModule extends AliasorModule {
      *       consoleLog: true
      *    });
      * }
+     *
      */
     errorHandler(params: ErrorHandlerParams) {
         const { error, showNotice, consoleLog } = params;
 
-        if (showNotice) {
+        if (showNotice === undefined || showNotice) {
             const msg = getReadableErrorMsg(error);
             let durationSec = msg.length / 10;
             durationSec = Math.min(durationSec, 5);
             new Notice(msg, durationSec * 1000);
         }
 
-        if (consoleLog) {
-            console.log(error);
+        if (consoleLog === false || error instanceof AliasorError) {
+            return;
         }
+        console.log(error);
     }
 }

@@ -42,6 +42,9 @@ export class CommandsModule extends AliasorModule {
         );
         modal.open();
     }
+
+    // TODO
+    execCommandHandler() {}
 }
 
 /**
@@ -55,9 +58,10 @@ class SelectCommandSuggestModal extends FuzzySuggestModal<Command> {
         private a: App,
         private m: CommandsModule,
         private cb: (command: Command) => void,
+        protected msg?: string,
     ) {
         super(a);
-        this.setPlaceholder("Select a command...");
+        this.setPlaceholder(msg ?? "Select a command...");
     }
 
     getItems(): Command[] {
@@ -68,7 +72,7 @@ class SelectCommandSuggestModal extends FuzzySuggestModal<Command> {
         return item.name;
     }
 
-    onChooseItem(item: Command, evt: MouseEvent | KeyboardEvent): void {
+    onChooseItem(item: Command): void {
         if (item) {
             this.cb(item);
         }
