@@ -19,7 +19,7 @@ interface AliasorSettings {
     aliases: Record<string, string>;
 }
 
-interface AliasInfo {
+export interface AliasInfo {
     alias: string;
     commandId?: string;
     commandName?: string;
@@ -29,28 +29,7 @@ interface AliasInfo {
 const DEFAULT_SETTINGS: AliasorSettings = {
     version: 1,
     aliases: {
-        mkal: "add-alias",
-        rmal: "remove-alias",
-        edital: "edit-alias",
-        lsal: "list-aliases",
-        findal: "find-alias",
-        helpal: "help-alias",
-        showal: "show-alias",
-        copyal: "copy-alias",
-        moveal: "move-alias",
-        exportal: "export-alias",
-        importal: "import-alias",
-        syncal: "sync-alias",
-        resetal: "reset-alias",
-        enableal: "enable-alias",
-        disableal: "disable-alias",
-        backupal: "backup-alias",
-        restoreal: "restore-alias",
-        searchal: "search-alias",
-        sortal: "sort-alias",
-        mergeal: "merge-alias",
-        splital: "split-alias",
-        renameal: "rename-alias",
+        addal: "obsidian-aliasor:add-new-alias",
     },
 };
 
@@ -83,8 +62,15 @@ export class SettingsModule extends AliasorModule {
     async onload() {
         await this.loadSettings();
         this.tab = new AliasorSettingsTab(this.a, this.p);
-        console.log("adding tab");
         this.p.addSettingTab(this.tab);
+
+        this.p.addCommand({
+            id: "add-new-alias",
+            name: "Add New Alias",
+            callback: () => {
+                this.addNewAliasCommandHandler();
+            },
+        });
     }
 
     async loadSettings(): Promise<AliasorSettings> {

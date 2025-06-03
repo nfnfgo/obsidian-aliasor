@@ -1,6 +1,8 @@
 import { FuzzySuggestModal } from "obsidian";
 import type { App, Command, FuzzyMatch } from "obsidian";
 import { AliasorModule } from "@/modules/general";
+import AliasorPlugin from "@/main";
+import { AliasInfo } from "./settings";
 
 interface ObsidianCommandAPI {
     commands: Record<string, Command>;
@@ -14,6 +16,14 @@ export class CommandsModule extends AliasorModule {
         // unsafe type conversion
         // this module are using undocumented Obsidian `app` API
         this.obsCmd = (this.a as any).commands as ObsidianCommandAPI;
+
+        this.p.addCommand({
+            id: "exec-command-by-alias",
+            name: "Execute command by alias",
+            callback: () => {
+                this.execCommandHandler();
+            },
+        });
     }
 
     executeCommandById(commandId: string): void {
@@ -44,7 +54,18 @@ export class CommandsModule extends AliasorModule {
     }
 
     // TODO
-    execCommandHandler() {}
+    execCommandHandler() {
+        new SelectAliasedCommandSuggestModal(
+            this.p,
+            (aliasInfo: AliasInfo) => {
+                if (aliasInfo.commandId === undefined) {
+                    return;
+                }
+                this.executeCommandById(aliasInfo.commandId);
+            },
+            "Select an alias to execute",
+        ).open();
+    }
 }
 
 /**
@@ -73,6 +94,40 @@ class SelectCommandSuggestModal extends FuzzySuggestModal<Command> {
     }
 
     onChooseItem(item: Command): void {
+        if (item) {
+            this.cb(item);
+        }
+    }
+}
+
+class SelectAliasedCommandSuggestModal extends FuzzySuggestModal<AliasInfo> {
+    constructor(
+        protected p: AliasorPlugin,
+        protected cb: (command: AliasInfo) => void,
+        protected msg?: string,
+    ) {
+        super(p.app);
+        this.setPlaceholder(msg ?? "Enter an alias...");
+    }
+
+    renderSuggestion(item: FuzzyMatch<AliasInfo>, el: HTMLElement): void {
+        el.createEl("div", {
+            text: item.item.alias,
+        });
+        el.createEl("small", {
+            text: item.item.commandName ?? "Unknown Command",
+        });
+    }
+
+    getItems(): AliasInfo[] {
+        return this.p.modules.settings.getAliasedCommands();
+    }
+
+    getItemText(item: AliasInfo): string {
+        return item.alias;
+    }
+
+    onChooseItem(item: AliasInfo): void {
         if (item) {
             this.cb(item);
         }
