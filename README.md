@@ -16,7 +16,4 @@ Then if you need to execute a command by its alias, you just need to:
 2. Enter the alias
 3. Execute that command!
 
----
-
-- Read [Add Alias](Add-Alias) to learn about how to add new aliases to this plugin.
-- Read [Trigger Command By Alias](Trigger-Command-By-Alias) to learn about how to quickly trigger command using this plugin.
+Checkout [plugin docs](https://github.com/nfnfgo/obsidian-aliasor/wiki) for more info!
