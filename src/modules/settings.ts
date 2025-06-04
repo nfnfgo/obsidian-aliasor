@@ -13,6 +13,7 @@ import { AliasorError } from "@/errors/general";
 import { AliasorModule } from "./general";
 import { UtilModule } from "./util";
 import { assert } from "console";
+import { AliasorConfirmModal } from "@/modals/general";
 
 interface AliasorSettings {
     version: 1;
@@ -149,35 +150,16 @@ export class SettingsModule extends AliasorModule {
     }
 
     addNewAliasCommandHandler(onSuccess?: () => any): void {
-        let selectedCommand: Command | undefined = undefined;
-
-        const newAliasEnteredHandler = async (newAlias: string | undefined) => {
-            try {
-                await this.addAlias({
-                    alias: newAlias as string,
-                    commandId: (selectedCommand as Command).id,
-                    check: true,
-                });
-                new Notice("Alias added: " + newAlias);
-                onSuccess?.();
-            } catch (e) {
-                this.p.modules.errors.errorHandler({ error: e });
-            }
-        };
-
         this.p.modules.commands.selectCommandByModal(async (command) => {
             if (!command) {
                 new Notice("No command selected.");
                 return;
             }
-            selectedCommand = command;
-            // use a new modal to get the alias from the user
-            new NewAliasInputModal({
-                app: this.a,
-                module: this,
-                commandName: command.name,
-                onSubmit: newAliasEnteredHandler,
-            }).open();
+            const modal = new NewAliasInputModal(this.p);
+            modal.commandId = command.id;
+            modal.commandName = command.name;
+            modal.onSuccess = onSuccess;
+            modal.open();
         });
     }
 
@@ -450,62 +432,39 @@ class AliasorSettingsTab extends PluginSettingTab {
     }
 }
 
-interface NewAliasInputModalProps {
-    app: App;
-    module: SettingsModule;
-    onSubmit: (alias: string) => any;
-    commandName?: string;
-}
+class NewAliasInputModal extends AliasorConfirmModal {
+    title = "Set New Alias";
+    confirmText = "Create";
 
-class NewAliasInputModal extends Modal {
-    onSubmit: (alias: string) => any;
-    protected settingsModule: SettingsModule;
-    protected commandName?: string;
-    protected aliasInput: TextComponent;
+    public aliasInput: TextComponent;
+    public commandId: string;
+    public commandName?: string;
+    public onSuccess?: (() => void) | undefined;
 
-    constructor({
-        app,
-        module,
-        onSubmit,
-        commandName,
-    }: NewAliasInputModalProps) {
-        super(app);
-        this.onSubmit = onSubmit;
-        this.settingsModule = module;
-        this.commandName = commandName;
-
-        const { contentEl } = this;
-        contentEl.createEl("h2", { text: "Enter Alias" });
+    protected setBodyContent(contentEl: HTMLElement): void {
         contentEl.createEl("p", {
             text: `Please enter a new alias for the command ${this.commandName ?? ""}`,
         });
 
-        const handleSubmit = (alias: string) => {
-            this.onSubmit(alias);
-            this.close();
-        };
-
         // show red input when alias invalid
         new Setting(this.contentEl).setName("New Alias").addText((text) => {
-            this.settingsModule.addInvalidNewAliasIndicatorToInput(text);
+            this.p.modules.settings.addInvalidNewAliasIndicatorToInput(text);
             this.aliasInput = text;
-            this.aliasInput.inputEl.onsubmit = () => {
-                const alias = this.aliasInput.getValue().trim();
-                handleSubmit(alias);
-            };
         });
-
-        new Setting(contentEl)
-            .addButton((btn) => {
-                btn.setCta();
-                btn.setButtonText("OK").onClick(() => {
-                    handleSubmit(this.aliasInput.getValue().trim());
-                });
-            })
-            .addButton((btn) => {
-                btn.setButtonText("Cancel").onClick(() => {
-                    this.close();
-                });
-            });
     }
+
+    public onConfirm?: (() => void) | undefined = () => {
+        try {
+            this.p.modules.settings.addAlias({
+                alias: this.aliasInput.getValue().trim(),
+                commandId: this.commandId,
+            });
+            new Notice(
+                `Alias "${this.aliasInput.getValue()}" added successfully.`,
+            );
+            this.onSuccess?.();
+        } catch (e) {
+            this.p.modules.errors.errorHandler({ error: e });
+        }
+    };
 }
