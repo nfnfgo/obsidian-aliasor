@@ -1,6 +1,6 @@
 {
-    "name": "obsidian-aliasor",
-    "version": "1.0.0",
+    "name": "aliasor",
+    "version": "1.0.1",
     "description": "Add alias for commonly used commands and execute it quickly.",
     "main": "main.js",
     "scripts": {

@@ -1,7 +1,7 @@
 {
-    "id": "obsidian-aliasor",
+    "id": "aliasor",
     "name": "Aliasor",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "minAppVersion": "1.8.10",
     "description": "Add alias for commonly used commands and execute it quickly.",
     "author": "nfnfgo",

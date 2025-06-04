@@ -24,7 +24,7 @@ export interface AliasInfo {
 const DEFAULT_SETTINGS: AliasorSettings = {
     version: 1,
     aliases: {
-        addal: "obsidian-aliasor:add-new-alias",
+        addal: "aliasor:add-new-alias",
     },
 };
 
