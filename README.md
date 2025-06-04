@@ -17,3 +17,7 @@ Then if you need to execute a command by its alias, you just need to:
 3. Execute that command!
 
 Checkout [plugin docs](https://github.com/nfnfgo/obsidian-aliasor/wiki) for more info!
+
+# Bug Reports & Feature Requests
+
+Bug reports and feature requests are welcome! Please [open a new issue](https://github.com/nfnfgo/obsidian-aliasor/issues) in this repository.
