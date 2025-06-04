@@ -37,8 +37,18 @@ export class CommandsModule extends AliasorModule {
         return Object.values(this.obsCmd.commands);
     }
 
+    /**
+     * Get command instance by it's ID. Return `undefined` if not exists.
+     */
     getCommandById(commandId: string): Command | undefined {
         return this.obsCmd.commands[commandId];
+    }
+
+    /**
+     * Check if a command exists in this vault.
+     */
+    isCommandExists(commandId: string): boolean {
+        return !(this.getCommandById(commandId) === undefined);
     }
 
     /**
@@ -64,6 +74,11 @@ export class CommandsModule extends AliasorModule {
                         `Command ID for alias "${aliasInfo.alias}" is not defined.`,
                     );
                     return;
+                }
+                if (!this.isCommandExists(aliasInfo.commandId)) {
+                    new Notice(
+                        `Command with ID "${aliasInfo.commandId}" does not exists in this vault.`,
+                    );
                 }
                 this.executeCommandById(aliasInfo.commandId);
             },

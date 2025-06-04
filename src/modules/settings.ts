@@ -1,18 +1,12 @@
 import type { App, Command } from "obsidian";
-import {
-    PluginSettingTab,
-    Setting,
-    TextComponent,
-    Modal,
-    Notice,
-} from "obsidian";
+import { PluginSettingTab, Setting, TextComponent, Notice } from "obsidian";
 
 import AliasorPlugin from "@/main";
 import { AliasorError } from "@/errors/general";
 
 import { AliasorModule } from "./general";
 import { UtilModule } from "./util";
-import { assert } from "console";
+
 import { AliasorConfirmModal } from "@/modals/general";
 
 interface AliasorSettings {
@@ -40,6 +34,7 @@ class SettingUpdateError extends AliasorSettingError {
         return `Settings update failed: ${this.message}`;
     }
 }
+class SettingParseError extends AliasorSettingError {}
 
 interface AddAliasParams {
     /**
@@ -195,6 +190,42 @@ export class SettingsModule extends AliasorModule {
             }
         });
     }
+
+    /**
+     * Merge current aliases settings with new set of new aliases.
+     *
+     * Previously existed settings will always take precedence of
+     * newly passed in aliases.
+     * It could be considered that this method could add set of new
+     * aliases into current settings without breaking/changing any
+     * of currently working aliases.
+     */
+    async mergeAliases(newAliases: Record<string, string>) {
+        const mergedAliases = {
+            ...newAliases,
+            ...this.settings.aliases,
+        };
+        this.settings.aliases = mergedAliases;
+        await this.saveSettings();
+    }
+
+    async exportAliasesToClipboard() {
+        const aliasesJson = JSON.stringify(this.settings.aliases);
+        await navigator.clipboard.writeText(aliasesJson);
+    }
+
+    async mergeAliasesFromClipboard() {
+        const clipboardText = await navigator.clipboard.readText();
+        let newAliases;
+        try {
+            newAliases = JSON.parse(clipboardText);
+        } catch (e) {
+            throw new SettingParseError(
+                "Failed to parse aliases info from clipboard",
+            );
+        }
+        await this.mergeAliases(newAliases);
+    }
 }
 
 class AliasorSettingsTab extends PluginSettingTab {
@@ -219,13 +250,51 @@ class AliasorSettingsTab extends PluginSettingTab {
     display(): void {
         const { containerEl } = this;
         containerEl.empty();
-        this.displayAliasManagement();
+        this._displayConfigImportExport();
+        this._displayAliasManagement();
+        this._displayAbout();
+    }
+
+    private _displayConfigImportExport(parentDiv?: HTMLElement): void {
+        const container = parentDiv ?? this.containerEl;
+        container.createEl("h2", { text: "Config Import/Export" });
+        new Setting(container)
+            .setName("Export To Clipboard")
+            .setDesc("Exported info could be imported to another vault.")
+            .addButton((btn) => {
+                btn.setButtonText("Export").onClick(async () => {
+                    await this.settingsModule.exportAliasesToClipboard();
+                    new Notice("Aliases exported to clipboard.");
+                });
+            });
+
+        new Setting(container)
+            .setName("Import From Clipboard")
+            .setDesc(
+                "Merge aliases info from clipboard, duplicated Aliases will be ignored. " +
+                    "Aliases could be imported even if the corresponding command is not exist in this vault.",
+            )
+            .addButton((btn) => {
+                btn.setButtonText("Import")
+                    .setCta()
+                    .onClick(async () => {
+                        try {
+                            await this.settingsModule.mergeAliasesFromClipboard();
+                            new Notice(
+                                "Aliases imported and merged from clipboard.",
+                            );
+                            this._displayAliasTiles();
+                        } catch (e) {
+                            this.p.modules.errors.errorHandler({ error: e });
+                        }
+                    });
+            });
     }
 
     /**
      * Display the alias management section (title, sort/filter, and alias tiles) in a container div.
      */
-    private displayAliasManagement(parentDiv?: HTMLElement): void {
+    private _displayAliasManagement(parentDiv?: HTMLElement): void {
         const container = parentDiv ?? this.containerEl;
 
         // Create or get the main alias management container
@@ -239,15 +308,11 @@ class AliasorSettingsTab extends PluginSettingTab {
         }
 
         aliasManagementDiv.empty();
-        aliasManagementDiv.createEl("h1", { text: "Alias Management" });
-
+        aliasManagementDiv.createEl("h2", { text: "Alias Management" });
         this._displayAddAliasTile(aliasManagementDiv);
-
-        aliasManagementDiv.createEl("h2", { text: "Sort & Filter" });
         this._displaySortTile(aliasManagementDiv);
         this._displayFilterTile(aliasManagementDiv);
-        aliasManagementDiv.createEl("h2", { text: "Aliases" });
-        this.displayAliasTiles(aliasManagementDiv);
+        this._displayAliasTiles(aliasManagementDiv);
     }
 
     /**
@@ -255,9 +320,8 @@ class AliasorSettingsTab extends PluginSettingTab {
      * filtering and sorting applied.
      *
      * Call this method when the only part need to be updated is the alias tiles.
-     * Optionally accepts a parent div to render into.
      */
-    private displayAliasTiles(parentDiv?: HTMLElement): void {
+    private _displayAliasTiles(parentDiv?: HTMLElement): void {
         const container = parentDiv ?? this.containerEl;
         let aliasTilesDiv = container.querySelector(
             ".aliasor-alias-tiles",
@@ -352,7 +416,7 @@ class AliasorSettingsTab extends PluginSettingTab {
                 btn.setButtonText("Delete").onClick(async () => {
                     delete this.settingsModule.settings.aliases[info.alias];
                     await this.settingsModule.saveSettings();
-                    this.displayAliasTiles();
+                    this._displayAliasTiles();
                 });
             });
     }
@@ -386,7 +450,7 @@ class AliasorSettingsTab extends PluginSettingTab {
                     .setButtonText("New")
                     .onClick(() => {
                         this.settingsModule.addNewAliasCommandHandler(() => {
-                            this.displayAliasTiles(parentDiv);
+                            this._displayAliasTiles(parentDiv);
                         });
                     });
             });
@@ -406,7 +470,7 @@ class AliasorSettingsTab extends PluginSettingTab {
                         | "alias"
                         | "commandId"
                         | "commandName";
-                    this.displayAliasTiles(parentDiv);
+                    this._displayAliasTiles(parentDiv);
                 });
             })
             .addButton((btn) => {
@@ -414,7 +478,7 @@ class AliasorSettingsTab extends PluginSettingTab {
                     this.sortAscend ? "Ascend" : "Descend",
                 ).onClick(() => {
                     this.sortAscend = !this.sortAscend;
-                    this.displayAliasManagement();
+                    this._displayAliasManagement();
                 });
             });
     }
@@ -426,9 +490,40 @@ class AliasorSettingsTab extends PluginSettingTab {
             text.setValue(this.filterText);
             text.onChange((value) => {
                 this.filterText = value;
-                this.displayAliasTiles(parentDiv);
+                this._displayAliasTiles(parentDiv);
             });
         });
+    }
+
+    private _displayAbout(parentDiv?: HTMLElement) {
+        const container = parentDiv ?? this.containerEl;
+        container.createEl("h2", { text: "About" });
+
+        const links = [
+            {
+                name: "Bug Report & Feature Request",
+                desc: "View the source code, report a bug or send a feature request.",
+                url: "https://github.com/nfnfgo/obsidian-aliasor/issues",
+                btnText: "Open New Issue",
+            },
+            {
+                name: "Documentation",
+                desc: "Read the plugin documentation.",
+                url: "https://github.com/nfnfgo/obsidian-aliasor/wiki",
+                btnText: "Read Docs",
+            },
+        ];
+
+        for (const link of links) {
+            new Setting(container)
+                .setName(link.name)
+                .setDesc(link.desc)
+                .addButton((btn) => {
+                    btn.setButtonText(link.btnText).onClick(() =>
+                        window.open(link.url, "_blank"),
+                    );
+                });
+        }
     }
 }
 
