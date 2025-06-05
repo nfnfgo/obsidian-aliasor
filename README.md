@@ -16,6 +16,8 @@ Then if you need to execute a command by its alias, you just need to:
 2. Enter the alias
 3. Execute that command!
 
+https://github.com/user-attachments/assets/129f6fcb-1395-4319-823d-c8e55c77ac5f
+
 Checkout [plugin docs](https://github.com/nfnfgo/obsidian-aliasor/wiki) for more info!
 
 # Bug Reports & Feature Requests
