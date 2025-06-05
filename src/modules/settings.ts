@@ -219,7 +219,7 @@ export class SettingsModule extends AliasorModule {
         let newAliases;
         try {
             newAliases = JSON.parse(clipboardText);
-        } catch (e) {
+        } catch {
             throw new SettingParseError(
                 "Failed to parse aliases info from clipboard",
             );

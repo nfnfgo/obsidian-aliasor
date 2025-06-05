@@ -1,7 +1,6 @@
 import { FuzzySuggestModal, Notice } from "obsidian";
 import type { App, Command, FuzzyMatch } from "obsidian";
 import { AliasorModule } from "@/modules/general";
-import AliasorPlugin from "@/main";
 import { AliasInfo } from "./settings";
 import { AliasorFuzzySuggestModal } from "@/modals/general";
 

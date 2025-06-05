@@ -6,10 +6,9 @@
     "scripts": {
         "dev": "node esbuild.config.mjs",
         "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-        "version": "node version-bump.mjs && git add manifest.json versions.json",
+        "version": "node version-bump.mjs",
         "format": "prettier --write .",
-        "prepare": "husky install",
-        "lint": "eslint ."
+        "lint": "pnpm eslint ."
     },
     "keywords": [],
     "author": "nfnfgo",
@@ -29,5 +28,28 @@
     },
     "lint-staged": {
         "*.{mjs,js,ts,css,md,json}": "prettier --write"
+    },
+    "prettier": {
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "all",
+        "printWidth": 80,
+        "tabWidth": 4,
+        "useTabs": false,
+        "bracketSpacing": true,
+        "arrowParens": "always",
+        "endOfLine": "lf",
+        "overrides": [
+            {
+                "files": [
+                    "*.yml",
+                    "*.yaml"
+                ],
+                "options": {
+                    "tabWidth": 2,
+                    "useTabs": false
+                }
+            }
+        ]
     }
 }

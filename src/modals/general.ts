@@ -1,4 +1,4 @@
-import { Modal, SuggestModal, FuzzySuggestModal, Setting } from "obsidian";
+import { Modal, FuzzySuggestModal, Setting } from "obsidian";
 
 import type AliasorPlugin from "@/main";
 
