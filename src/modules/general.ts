@@ -1,13 +1,18 @@
 import type AliasorPlugin from "@/main";
 import type { App } from "obsidian";
+import type { ObsidianCommandAPI } from "@/modules/types";
+
+interface AppAPI extends App {
+    commands: ObsidianCommandAPI;
+}
 
 export abstract class AliasorModule {
     protected p: AliasorPlugin;
-    protected a: App;
+    protected a: AppAPI;
 
     constructor(protected plugin: AliasorPlugin) {
         this.p = plugin;
-        this.a = plugin.app;
+        this.a = plugin.app as AppAPI;
     }
 
     /**

@@ -3,11 +3,7 @@ import type { App, Command, FuzzyMatch } from "obsidian";
 import { AliasorModule } from "@/modules/general";
 import { AliasInfo } from "./settings";
 import { AliasorFuzzySuggestModal } from "@/modals/general";
-
-interface ObsidianCommandAPI {
-    commands: Record<string, Command>;
-    executeCommandById(commandId: string): void;
-}
+import { ObsidianCommandAPI } from "./types";
 
 export class CommandsModule extends AliasorModule {
     public obsCmd: ObsidianCommandAPI;
@@ -15,10 +11,10 @@ export class CommandsModule extends AliasorModule {
     async onload() {
         // unsafe type conversion
         // this module are using undocumented Obsidian `app` API
-        this.obsCmd = (this.a as any).commands as ObsidianCommandAPI;
+        this.obsCmd = this.a.commands;
 
         this.p.addCommand({
-            id: "exec-command-by-alias",
+            id: "exec-by-alias",
             name: "Execute command by alias",
             callback: () => {
                 this.execCommandHandler();
