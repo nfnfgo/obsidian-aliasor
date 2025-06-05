@@ -42,8 +42,66 @@ export class CommandsModule extends AliasorModule {
     /**
      * Check if a command exists in this vault.
      */
-    isCommandExists(commandId: string): boolean {
+    isCommandExists(commandId: string | undefined): boolean {
+        if (commandId === undefined || commandId === null) {
+            return false;
+        }
         return !(this.getCommandById(commandId) === undefined);
+    }
+
+    /**
+     * Check if a command is callable.
+     *
+     * If a command has a checkable callback, this method will perform the check process.
+     * Read [Obsidian documentation](https://docs.obsidian.md/Reference/TypeScript+API/Command)
+     * for more information about command callbacks.
+     */
+    isCommandCallable(commandId: string | undefined): boolean {
+        if (!this.isCommandExists(commandId)) {
+            return false;
+        }
+
+        // at this point, the commandId must not be undefined and the command must exist
+        // so we can safely do the cast as follows
+        const cmd = this.getCommandById(commandId as string) as Command;
+
+        if (cmd.editorCheckCallback || cmd.editorCallback) {
+            if (
+                this.a.workspace.activeEditor === null ||
+                this.a.workspace.activeEditor === undefined ||
+                this.a.workspace.activeEditor.editor === null ||
+                this.a.workspace.activeEditor.editor === undefined
+            ) {
+                // If the command has an editor callback, but no active editor, it is not callable
+                return false;
+            }
+
+            if (cmd.editorCheckCallback) {
+                const ret = cmd.editorCheckCallback(
+                    true,
+                    this.a.workspace.activeEditor.editor,
+                    this.a.workspace.activeEditor,
+                );
+                if (ret === false) {
+                    // If the editor check callback returns false, it is not callable
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        if (cmd.checkCallback) {
+            // If the command has a check callback, we need to call it
+            const ret = cmd.checkCallback(true);
+            if (ret === false) {
+                // If the check callback returns false, it is not callable
+                return false;
+            }
+            return true;
+        }
+
+        return true;
     }
 
     /**
@@ -127,7 +185,17 @@ class SelectAliasedCommandSuggestModal extends AliasorFuzzySuggestModal<AliasInf
     }
 
     getItems(): AliasInfo[] {
-        return this.p.modules.settings.getAliasedCommands();
+        const items = this.p.modules.settings.getAliasedCommands();
+
+        // Only show callable commands if the corresponding setting is enabled
+        const settingsModule = this.p.modules.settings;
+        const commandsModule = this.p.modules.commands;
+        if (settingsModule.settings.callableOnly) {
+            return items.filter((item) =>
+                commandsModule.isCommandCallable(item.commandId),
+            );
+        }
+        return items;
     }
 
     getItemText(item: AliasInfo): string {

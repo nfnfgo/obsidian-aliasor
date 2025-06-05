@@ -11,6 +11,10 @@ import { AliasorConfirmModal } from "@/modals/general";
 
 interface AliasorSettings {
     version: 1;
+    /**
+     * If true, only callable commands will be shown in the alias selection modal.
+     */
+    callableOnly: boolean;
     aliases: Record<string, string>;
 }
 
@@ -23,6 +27,7 @@ export interface AliasInfo {
 
 const DEFAULT_SETTINGS: AliasorSettings = {
     version: 1,
+    callableOnly: false,
     aliases: {
         addal: "aliasor:add-new-alias",
     },
@@ -250,9 +255,31 @@ class AliasorSettingsTab extends PluginSettingTab {
     display(): void {
         const { containerEl } = this;
         containerEl.empty();
+        this._displayGeneralSettings();
         this._displayConfigImportExport();
         this._displayAliasManagement();
         this._displayAbout();
+    }
+
+    private _displayGeneralSettings(parentDiv?: HTMLElement): void {
+        const container = parentDiv ?? this.containerEl;
+        container.createEl("h2", { text: "General" });
+        new Setting(container)
+            .setName("Show Callable Commands Only")
+            .setDesc(
+                "Only commands that can be called will be displayed when selecting aliases.",
+            )
+            .setTooltip(
+                "Those commands that are not available in this vault " +
+                    "or could not be executed in current workspace state will be hidden",
+            )
+            .addToggle((toggle) => {
+                toggle.setValue(this.settingsModule.settings.callableOnly);
+                toggle.onChange(async (value) => {
+                    this.settingsModule.settings.callableOnly = value;
+                    await this.settingsModule.saveSettings();
+                });
+            });
     }
 
     private _displayConfigImportExport(parentDiv?: HTMLElement): void {
