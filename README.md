@@ -1,6 +1,18 @@
+![Static Badge](https://img.shields.io/badge/Obsidian%20Plugin-Aliasor-8a5cf5?style=for-the-badge&logo=obsidian)
+![GitHub License](https://img.shields.io/github/license/nfnfgo/obsidian-aliasor?style=for-the-badge&color=blue)
+![Last Commit](https://img.shields.io/github/last-commit/nfnfgo/obsidian-aliasor?style=for-the-badge)
+[![GitHub Release](https://img.shields.io/github/v/release/nfnfgo/obsidian-aliasor?style=for-the-badge)](https://github.com/nfnfgo/obsidian-aliasor/releases)
+
 Welcome to **Aliasor**! This is plugin to help you add aliases to [Obsidian](https://obsidian.md/) commands!
 
 https://github.com/user-attachments/assets/a190cf67-78c8-4085-b937-b9ab41a865ba
+
+# Features
+
+- Similar workflow to [Obsidian Command Palette](https://help.obsidian.md/Plugins/Command+palette) but with aliases
+- Add one or more aliases to any Obsidian command
+- Execute commands by their aliases
+- Aliases import/export
 
 # Documentations
 
@@ -23,3 +35,5 @@ Checkout [plugin docs](https://github.com/nfnfgo/obsidian-aliasor/wiki) for more
 # Bug Reports & Feature Requests
 
 Bug reports and feature requests are welcome! Please [open a new issue](https://github.com/nfnfgo/obsidian-aliasor/issues) in this repository.
+
+[![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/nfnfgo/obsidian-aliasor?style=for-the-badge)](https://github.com/nfnfgo/obsidian-aliasor/issues/new)
