@@ -27,9 +27,19 @@ export class I18nModule extends AliasorModule {
         const zh = await import("../locales/zh.json", {
             assert: { type: "json" },
         });
+        // @ts-expect-error: dynamic import of JSON with assertion is not fully supported by TS yet
+        const ja = await import("../locales/ja.json", {
+            assert: { type: "json" },
+        });
+        // @ts-expect-error: dynamic import of JSON with assertion is not fully supported by TS yet
+        const ko = await import("../locales/ko.json", {
+            assert: { type: "json" },
+        });
         return {
             en: en.default || en,
             zh: zh.default || zh,
+            ja: ja.default || ja,
+            ko: ko.default || ko,
         } as Resource;
     }
 

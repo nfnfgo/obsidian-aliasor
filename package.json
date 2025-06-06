@@ -10,7 +10,8 @@
         "format": "prettier --write .",
         "lint": "pnpm eslint . --cache",
         "test": "vitest run",
-        "test:verbose": "vitest run --reporter verbose"
+        "test:verbose": "vitest run --reporter verbose",
+        "check": "pnpm format && pnpm lint && pnpm test"
     },
     "keywords": [],
     "author": "nfnfgo",

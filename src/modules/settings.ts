@@ -346,7 +346,9 @@ class AliasorSettingsTab extends PluginSettingTab {
                 btn.setCta()
                     .setButtonText(this.t("settings.alias.add.button"))
                     .onClick(() => {
-                        this.settingsModule.addNewAliasCommandHandler();
+                        this.settingsModule.addNewAliasCommandHandler(() => {
+                            this._displayAliasManagement();
+                        });
                     });
             });
     }
