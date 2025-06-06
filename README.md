@@ -13,9 +13,13 @@ https://github.com/user-attachments/assets/a190cf67-78c8-4085-b937-b9ab41a865ba
 - 🏷️ Add one or more aliases to any Obsidian command
 - ⚡ Execute commands by their aliases
 - 📦 Aliases import/export
-- 🌐 Multilingual support _(currently supports English, Chinese, Japanese, and Korean — translation contributions are welcome!)_
+- 🌐 Multilingual support _(currently supports English, Chinese, Japanese, and Korean. [Translation contributions](./CONTRIBUTING.md) are welcome!)_
 
-# Documentations
+# Installation
+
+Check out [Installation Guide](https://github.com/nfnfgo/obsidian-aliasor/wiki/Installation) to learn how to install the plugin.
+
+# Documentation
 
 Check out [Plugin Documentation](https://github.com/nfnfgo/obsidian-aliasor/wiki) wiki page for more info.
 
