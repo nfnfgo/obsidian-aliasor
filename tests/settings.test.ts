@@ -32,6 +32,9 @@ describe("SettingsModule", () => {
                 commands: {
                     getCommandById: vi.fn((id) => id && { id, name: id }),
                 },
+                i18n: {
+                    t: vi.fn((key) => key),
+                },
             },
             addSettingTab: vi.fn(),
             addCommand: vi.fn(),

@@ -237,6 +237,7 @@ class AliasorSettingsTab extends PluginSettingTab {
     p: AliasorPlugin;
     a: App;
     settingsModule: SettingsModule;
+    t: (key: string, options?: any) => string;
 
     private sortCriteria: "alias" | "commandId" | "commandName" = "alias";
     private sortAscend = true;
@@ -247,6 +248,7 @@ class AliasorSettingsTab extends PluginSettingTab {
         this.p = plugin;
         this.a = app;
         this.settingsModule = this.p.modules.settings;
+        this.t = this.p.modules.i18n.t;
     }
     /**
      * Display the settings tab content.
@@ -263,16 +265,11 @@ class AliasorSettingsTab extends PluginSettingTab {
 
     private _displayGeneralSettings(parentDiv?: HTMLElement): void {
         const container = parentDiv ?? this.containerEl;
-        container.createEl("h2", { text: "General" });
+        container.createEl("h2", { text: this.t("settings.general.title") });
         new Setting(container)
-            .setName("Show Callable Commands Only")
-            .setDesc(
-                "Only commands that can be called will be displayed when selecting aliases.",
-            )
-            .setTooltip(
-                "Those commands that are not available in this vault " +
-                    "or could not be executed in current workspace state will be hidden",
-            )
+            .setName(this.t("settings.general.callableOnly.name"))
+            .setDesc(this.t("settings.general.callableOnly.desc"))
+            .setTooltip(this.t("settings.general.callableOnly.tooltip"))
             .addToggle((toggle) => {
                 toggle.setValue(this.settingsModule.settings.callableOnly);
                 toggle.onChange(async (value) => {
@@ -284,47 +281,39 @@ class AliasorSettingsTab extends PluginSettingTab {
 
     private _displayConfigImportExport(parentDiv?: HTMLElement): void {
         const container = parentDiv ?? this.containerEl;
-        container.createEl("h2", { text: "Config Import/Export" });
+        container.createEl("h2", { text: this.t("settings.config.title") });
         new Setting(container)
-            .setName("Export To Clipboard")
-            .setDesc("Exported info could be imported to another vault.")
+            .setName(this.t("settings.config.export.name"))
+            .setDesc(this.t("settings.config.export.desc"))
             .addButton((btn) => {
-                btn.setButtonText("Export").onClick(async () => {
+                btn.setButtonText(
+                    this.t("settings.config.export.button"),
+                ).onClick(async () => {
                     await this.settingsModule.exportAliasesToClipboard();
-                    new Notice("Aliases exported to clipboard.");
+                    new Notice(this.t("settings.config.export.success"));
                 });
             });
-
         new Setting(container)
-            .setName("Import From Clipboard")
-            .setDesc(
-                "Merge aliases info from clipboard, duplicated Aliases will be ignored. " +
-                    "Aliases could be imported even if the corresponding command is not exist in this vault.",
-            )
+            .setName(this.t("settings.config.import.name"))
+            .setDesc(this.t("settings.config.import.desc"))
             .addButton((btn) => {
-                btn.setButtonText("Import")
+                btn.setButtonText(this.t("settings.config.import.button"))
                     .setCta()
                     .onClick(async () => {
                         try {
                             await this.settingsModule.mergeAliasesFromClipboard();
                             new Notice(
-                                "Aliases imported and merged from clipboard.",
+                                this.t("settings.config.import.success"),
                             );
-                            this._displayAliasTiles();
-                        } catch (e) {
-                            this.p.modules.errors.errorHandler({ error: e });
+                        } catch {
+                            new Notice(this.t("settings.config.import.error"));
                         }
                     });
             });
     }
 
-    /**
-     * Display the alias management section (title, sort/filter, and alias tiles) in a container div.
-     */
     private _displayAliasManagement(parentDiv?: HTMLElement): void {
         const container = parentDiv ?? this.containerEl;
-
-        // Create or get the main alias management container
         let aliasManagementDiv = container.querySelector(
             ".aliasor-alias-management",
         ) as HTMLElement | null;
@@ -333,9 +322,10 @@ class AliasorSettingsTab extends PluginSettingTab {
                 cls: "aliasor-alias-management",
             });
         }
-
         aliasManagementDiv.empty();
-        aliasManagementDiv.createEl("h2", { text: "Alias Management" });
+        aliasManagementDiv.createEl("h2", {
+            text: this.t("settings.alias.title"),
+        });
         this._displayAddAliasTile(aliasManagementDiv);
         this._displaySortTile(aliasManagementDiv);
         this._displayFilterTile(aliasManagementDiv);
@@ -348,6 +338,70 @@ class AliasorSettingsTab extends PluginSettingTab {
      *
      * Call this method when the only part need to be updated is the alias tiles.
      */
+    private _displayAddAliasTile(parentDiv: HTMLElement): void {
+        new Setting(parentDiv)
+            .setName(this.t("settings.alias.add.name"))
+            .setDesc(this.t("settings.alias.add.desc"))
+            .addButton((btn) => {
+                btn.setCta()
+                    .setButtonText(this.t("settings.alias.add.button"))
+                    .onClick(() => {
+                        this.settingsModule.addNewAliasCommandHandler();
+                    });
+            });
+    }
+
+    private _displaySortTile(parentDiv?: HTMLElement): void {
+        const container = parentDiv ?? this.containerEl;
+        new Setting(container)
+            .setName(this.t("settings.alias.sort.name"))
+            .addDropdown((dropdown) => {
+                dropdown.addOption(
+                    "alias",
+                    this.t("settings.alias.sort.alias"),
+                );
+                dropdown.addOption(
+                    "commandId",
+                    this.t("settings.alias.sort.commandId"),
+                );
+                dropdown.addOption(
+                    "commandName",
+                    this.t("settings.alias.sort.commandName"),
+                );
+                dropdown.setValue(this.sortCriteria);
+                dropdown.onChange((value) => {
+                    this.sortCriteria = value as any;
+                    this._displayAliasTiles();
+                });
+            })
+            .addButton((btn) => {
+                btn.setButtonText(
+                    this.sortAscend
+                        ? this.t("settings.alias.sort.ascend")
+                        : this.t("settings.alias.sort.descend"),
+                ).onClick(() => {
+                    this.sortAscend = !this.sortAscend;
+                    this._displayAliasManagement();
+                });
+            });
+    }
+
+    private _displayFilterTile(parentDiv?: HTMLElement): void {
+        const container = parentDiv ?? this.containerEl;
+        new Setting(container)
+            .setName(this.t("settings.alias.filter.name"))
+            .addText((text) => {
+                text.setPlaceholder(
+                    this.t("settings.alias.filter.placeholder"),
+                );
+                text.setValue(this.filterText);
+                text.onChange((value) => {
+                    this.filterText = value;
+                    this._displayAliasTiles();
+                });
+            });
+    }
+
     private _displayAliasTiles(parentDiv?: HTMLElement): void {
         const container = parentDiv ?? this.containerEl;
         let aliasTilesDiv = container.querySelector(
@@ -398,7 +452,9 @@ class AliasorSettingsTab extends PluginSettingTab {
             return this.sortAscend ? cmp : -cmp;
         });
         if (entries.length === 0) {
-            aliasTilesDiv.createEl("p", { text: "No aliases found." });
+            aliasTilesDiv.createEl("p", {
+                text: this.t("settings.alias.noAliases"),
+            });
             return;
         }
 
@@ -408,9 +464,6 @@ class AliasorSettingsTab extends PluginSettingTab {
         }
     }
 
-    /**
-     * Create a single setting tile for an alias.
-     */
     private _createAliasSettingTile(
         info: AliasInfo,
         parentDiv?: HTMLElement,
@@ -423,8 +476,12 @@ class AliasorSettingsTab extends PluginSettingTab {
                 : undefined);
         // Create a new setting for the alias
         new Setting(containerEl)
-            .setName(command?.name ?? "[Unrecognized Command]")
-            .setDesc(info.commandId ?? "[unknown-command-id]")
+            .setName(
+                command?.name ?? this.t("settings.alias.unrecognizedCommand"),
+            )
+            .setDesc(
+                info.commandId ?? this.t("settings.alias.unknownCommandId"),
+            )
             .addText((text) => {
                 text.setValue(info.alias);
                 this.settingsModule.addInvalidNewAliasIndicatorToInput(
@@ -440,104 +497,32 @@ class AliasorSettingsTab extends PluginSettingTab {
                 });
             })
             .addButton((btn) => {
-                btn.setButtonText("Delete").onClick(async () => {
-                    delete this.settingsModule.settings.aliases[info.alias];
-                    await this.settingsModule.saveSettings();
-                    this._displayAliasTiles();
-                });
+                btn.setButtonText(this.t("settings.alias.delete")).onClick(
+                    async () => {
+                        delete this.settingsModule.settings.aliases[info.alias];
+                        await this.settingsModule.saveSettings();
+                        this._displayAliasTiles();
+                    },
+                );
             });
-    }
-
-    // private _aliasChangeHandler(
-    //     alias: string,
-    //     value: string,
-    //     textComponent?: TextComponent,
-    // ) {
-    //     let prevAlias = alias;
-
-    //     return async (newAlias: string, update = false) => {
-    //         if (!this.settingsModule.isValidNewAlias(newAlias) || !update) {
-    //             return;
-    //         }
-
-    //         // Update alias
-    //         this.settingsModule.settings.aliases[newAlias] = value;
-    //         delete this.settingsModule.settings.aliases[prevAlias];
-    //         await this.settingsModule.saveSettings();
-    //         prevAlias = newAlias; // Update previous alias
-    //     };
-    // }
-
-    private _displayAddAliasTile(parentDiv: HTMLElement): void {
-        new Setting(parentDiv)
-            .setName("Add New Alias")
-            .setDesc("Add a new alias for a command.")
-            .addButton((btn) => {
-                btn.setCta()
-                    .setButtonText("New")
-                    .onClick(() => {
-                        this.settingsModule.addNewAliasCommandHandler(() => {
-                            this._displayAliasTiles(parentDiv);
-                        });
-                    });
-            });
-    }
-
-    private _displaySortTile(parentDiv?: HTMLElement): void {
-        const container = parentDiv ?? this.containerEl;
-        new Setting(container)
-            .setName("Sort by")
-            .addDropdown((dropdown) => {
-                dropdown.addOption("alias", "Alias");
-                dropdown.addOption("commandId", "Command ID");
-                dropdown.addOption("commandName", "Command Name");
-                dropdown.setValue(this.sortCriteria);
-                dropdown.onChange((value) => {
-                    this.sortCriteria = value as
-                        | "alias"
-                        | "commandId"
-                        | "commandName";
-                    this._displayAliasTiles(parentDiv);
-                });
-            })
-            .addButton((btn) => {
-                btn.setButtonText(
-                    this.sortAscend ? "Ascend" : "Descend",
-                ).onClick(() => {
-                    this.sortAscend = !this.sortAscend;
-                    this._displayAliasManagement();
-                });
-            });
-    }
-
-    private _displayFilterTile(parentDiv?: HTMLElement): void {
-        const container = parentDiv ?? this.containerEl;
-        new Setting(container).setName("Filter").addText((text) => {
-            text.setPlaceholder("Type to filter...");
-            text.setValue(this.filterText);
-            text.onChange((value) => {
-                this.filterText = value;
-                this._displayAliasTiles(parentDiv);
-            });
-        });
     }
 
     private _displayAbout(parentDiv?: HTMLElement) {
         const container = parentDiv ?? this.containerEl;
-        container.createEl("h2", { text: "About" });
+        container.createEl("h2", { text: this.t("settings.about.title") });
 
         const links = [
             {
-                name: "Bug Report & Feature Request",
-                desc: "View the source code, report a bug or send a feature request.",
+                name: this.t("settings.about.bug.name"),
+                desc: this.t("settings.about.bug.desc"),
                 url: "https://github.com/nfnfgo/obsidian-aliasor/issues",
-                btnText: "Open New Issue",
+                btnText: this.t("settings.about.bug.button"),
             },
             {
-                name: "Documentation",
-                desc: "Read the plugin documentation.",
+                name: this.t("settings.about.doc.name"),
+                desc: this.t("settings.about.doc.desc"),
                 url: "https://github.com/nfnfgo/obsidian-aliasor/wiki",
-                btnText: "Read Docs",
+                btnText: this.t("settings.about.doc.button"),
             },
         ];
 
@@ -555,8 +540,8 @@ class AliasorSettingsTab extends PluginSettingTab {
 }
 
 class NewAliasInputModal extends AliasorConfirmModal {
-    title = "Set New Alias";
-    confirmText = "Create";
+    title = this.p.modules.i18n.t("settings.alias.add.title");
+    confirmText = this.p.modules.i18n.t("settings.alias.add.confirm");
 
     public aliasInput: TextComponent;
     public commandId: string;
@@ -565,14 +550,20 @@ class NewAliasInputModal extends AliasorConfirmModal {
 
     protected setBodyContent(contentEl: HTMLElement): void {
         contentEl.createEl("p", {
-            text: `Please enter a new alias for the command ${this.commandName ?? ""}`,
+            text: this.p.modules.i18n.t("settings.alias.add.inputDesc", {
+                command: this.commandName ?? "",
+            }),
         });
 
         // show red input when alias invalid
-        new Setting(this.contentEl).setName("New Alias").addText((text) => {
-            this.p.modules.settings.addInvalidNewAliasIndicatorToInput(text);
-            this.aliasInput = text;
-        });
+        new Setting(this.contentEl)
+            .setName(this.p.modules.i18n.t("settings.alias.add.inputLabel"))
+            .addText((text) => {
+                this.p.modules.settings.addInvalidNewAliasIndicatorToInput(
+                    text,
+                );
+                this.aliasInput = text;
+            });
     }
 
     public onConfirm?: (() => void) | undefined = () => {
@@ -582,7 +573,9 @@ class NewAliasInputModal extends AliasorConfirmModal {
                 commandId: this.commandId,
             });
             new Notice(
-                `Alias "${this.aliasInput.getValue()}" added successfully.`,
+                this.p.modules.i18n.t("settings.alias.add.success", {
+                    alias: this.aliasInput.getValue(),
+                }),
             );
             this.onSuccess?.();
         } catch (e) {

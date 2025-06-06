@@ -31,6 +31,7 @@ export class App {
     constructor() {
         this.commands = {
             commands: {},
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             executeCommandById: (_id) => {},
         };
         this.workspace = {

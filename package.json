@@ -8,7 +8,7 @@
         "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
         "version": "node version-bump.mjs",
         "format": "prettier --write .",
-        "lint": "pnpm eslint .",
+        "lint": "pnpm eslint . --cache",
         "test": "vitest run",
         "test:verbose": "vitest run --reporter verbose"
     },
@@ -54,5 +54,8 @@
                 }
             }
         ]
+    },
+    "dependencies": {
+        "i18next": "^25.2.1"
     }
 }

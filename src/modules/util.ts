@@ -1,4 +1,5 @@
 import { AliasorModule } from "./general";
+import { moment } from "obsidian";
 
 export class UtilModule extends AliasorModule {
     async onload() {}
@@ -16,5 +17,16 @@ export class UtilModule extends AliasorModule {
             if (i === query.length) return true;
         }
         return i === query.length;
+    }
+
+    /**
+     * Returns the current Obsidian language setting. If failed to retrieve,
+     * it defaults to "en".
+     *
+     * @returns The current Obsidian language code, e.g., "en", "fr", etc.
+     */
+    static getObsidianLanguage(): string {
+        // Obsidian's language is stored in the app's settings
+        return moment.locale() || "en";
     }
 }

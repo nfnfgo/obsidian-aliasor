@@ -1,0 +1,74 @@
+{
+    "translation": {
+        "hello": "你好",
+        "welcome": "欢迎使用 Aliasor！",
+        "settings": {
+            "general": {
+                "title": "通用设置",
+                "callableOnly": {
+                    "name": "仅显示可调用命令",
+                    "desc": "启用后，仅显示当前上下文可执行的命令。",
+                    "tooltip": "切换以在别名选择窗口中过滤掉不可调用的命令。"
+                }
+            },
+            "config": {
+                "title": "配置导入/导出",
+                "export": {
+                    "name": "导出到剪贴板",
+                    "desc": "导出的信息可导入到其他库。",
+                    "button": "导出",
+                    "success": "别名已导出到剪贴板。"
+                },
+                "import": {
+                    "name": "从剪贴板导入",
+                    "desc": "从剪贴板合并别名，重复的别名将被忽略。即使对应命令不存在也可导入。",
+                    "button": "导入",
+                    "success": "别名已从剪贴板导入。",
+                    "error": "从剪贴板导入别名失败。"
+                }
+            },
+            "alias": {
+                "title": "别名管理",
+                "add": {
+                    "name": "添加新别名",
+                    "desc": "为命令添加新别名。",
+                    "button": "新建",
+                    "inputLabel": "新别名",
+                    "inputDesc": "请输入命令 {{command}} 的新别名",
+                    "success": "别名 '{{alias}}' 添加成功。",
+                    "title": "设置新别名",
+                    "confirm": "创建"
+                },
+                "sort": {
+                    "name": "排序方式",
+                    "alias": "别名",
+                    "commandId": "命令ID",
+                    "commandName": "命令名称",
+                    "ascend": "升序",
+                    "descend": "降序"
+                },
+                "filter": {
+                    "name": "筛选",
+                    "placeholder": "输入以筛选..."
+                },
+                "noAliases": "未找到别名。",
+                "unrecognizedCommand": "[未识别的命令]",
+                "unknownCommandId": "[未知命令ID]",
+                "delete": "删除"
+            },
+            "about": {
+                "title": "关于",
+                "bug": {
+                    "name": "问题反馈与功能请求",
+                    "desc": "查看源码、报告问题或发送功能请求。",
+                    "button": "新建 Issue"
+                },
+                "doc": {
+                    "name": "文档",
+                    "desc": "阅读插件文档。",
+                    "button": "阅读文档"
+                }
+            }
+        }
+    }
+}

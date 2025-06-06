@@ -1,0 +1,74 @@
+{
+    "translation": {
+        "hello": "Hello",
+        "welcome": "Welcome to Aliasor!",
+        "settings": {
+            "general": {
+                "title": "General Settings",
+                "callableOnly": {
+                    "name": "Show only callable commands",
+                    "desc": "If enabled, only commands that can be executed in the current context will be shown.",
+                    "tooltip": "Toggle to filter out non-callable commands from the alias selection modal."
+                }
+            },
+            "config": {
+                "title": "Config Import/Export",
+                "export": {
+                    "name": "Export To Clipboard",
+                    "desc": "Exported info could be imported to another vault.",
+                    "button": "Export",
+                    "success": "Aliases exported to clipboard."
+                },
+                "import": {
+                    "name": "Import From Clipboard",
+                    "desc": "Merge aliases info from clipboard, duplicated Aliases will be ignored. Aliases could be imported even if the corresponding command is not exist in this vault.",
+                    "button": "Import",
+                    "success": "Aliases imported from clipboard.",
+                    "error": "Failed to import aliases from clipboard."
+                }
+            },
+            "alias": {
+                "title": "Alias Management",
+                "add": {
+                    "name": "Add New Alias",
+                    "desc": "Add a new alias for a command.",
+                    "button": "New",
+                    "inputLabel": "New Alias",
+                    "inputDesc": "Please enter a new alias for the command {{command}}",
+                    "success": "Alias '{{alias}}' added successfully.",
+                    "title": "Set New Alias",
+                    "confirm": "Create"
+                },
+                "sort": {
+                    "name": "Sort by",
+                    "alias": "Alias",
+                    "commandId": "Command ID",
+                    "commandName": "Command Name",
+                    "ascend": "Ascend",
+                    "descend": "Descend"
+                },
+                "filter": {
+                    "name": "Filter",
+                    "placeholder": "Type to filter..."
+                },
+                "noAliases": "No aliases found.",
+                "unrecognizedCommand": "[Unrecognized Command]",
+                "unknownCommandId": "[unknown-command-id]",
+                "delete": "Delete"
+            },
+            "about": {
+                "title": "About",
+                "bug": {
+                    "name": "Bug Report & Feature Request",
+                    "desc": "View the source code, report a bug or send a feature request.",
+                    "button": "Open New Issue"
+                },
+                "doc": {
+                    "name": "Documentation",
+                    "desc": "Read the plugin documentation.",
+                    "button": "Read Docs"
+                }
+            }
+        }
+    }
+}
