@@ -3,7 +3,7 @@ import type { App, Command, FuzzyMatch } from "obsidian";
 import { AliasorModule } from "@/modules/general";
 import { AliasInfo } from "./settings";
 import { AliasorFuzzySuggestModal } from "@/modals/general";
-import { ObsidianCommandAPI } from "./types";
+import type { ObsidianCommandAPI } from "./types";
 
 export class CommandsModule extends AliasorModule {
     public obsCmd: ObsidianCommandAPI;

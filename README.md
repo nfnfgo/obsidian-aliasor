@@ -9,10 +9,11 @@ https://github.com/user-attachments/assets/a190cf67-78c8-4085-b937-b9ab41a865ba
 
 # Features
 
-- Similar workflow to [Obsidian Command Palette](https://help.obsidian.md/Plugins/Command+palette) but with aliases
-- Add one or more aliases to any Obsidian command
-- Execute commands by their aliases
-- Aliases import/export
+- 🎛️ Similar workflow to [Obsidian Command Palette](https://help.obsidian.md/Plugins/Command+palette) but with aliases
+- 🏷️ Add one or more aliases to any Obsidian command
+- ⚡ Execute commands by their aliases
+- 📦 Aliases import/export
+- 🌐 Multilingual support _(currently supports English, Chinese, Japanese, and Korean — translation contributions are welcome!)_
 
 # Documentations
 
@@ -20,7 +21,7 @@ Check out [Plugin Documentation](https://github.com/nfnfgo/obsidian-aliasor/wiki
 
 # Recommended Workflow
 
-It's **highly recommended to add a hotkey for "Aliasor:Execute command by alias"**, for example you could add `Control + Shift + P` as the hotkey.
+It's **highly recommended to add a hotkey for "Aliasor: Execute command by alias"**, for example you could add `Control + Shift + P` as the hotkey.
 
 Then if you need to execute a command by its alias, you just need to:
 
@@ -37,3 +38,5 @@ Checkout [plugin docs](https://github.com/nfnfgo/obsidian-aliasor/wiki) for more
 Bug reports and feature requests are welcome! Please [open a new issue](https://github.com/nfnfgo/obsidian-aliasor/issues) in this repository.
 
 [![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/nfnfgo/obsidian-aliasor?style=for-the-badge)](https://github.com/nfnfgo/obsidian-aliasor/issues/new)
+
+If you are willing to help with the development or translation, please check out the [Contributing Guide](./CONTRIBUTING.md) for more info.
