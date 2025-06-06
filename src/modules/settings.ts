@@ -305,6 +305,7 @@ class AliasorSettingsTab extends PluginSettingTab {
                             new Notice(
                                 this.t("settings.config.import.success"),
                             );
+                            this._displayAliasManagement();
                         } catch {
                             new Notice(this.t("settings.config.import.error"));
                         }
