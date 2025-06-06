@@ -1,3 +1,6 @@
+Before start contributing to this project, you may want to read the dev docs of this plugin.
+The dev docs could be found at the sidebar of the [Plugin Documentation](https://github.com/nfnfgo/obsidian-aliasor/wiki) page.
+
 # Contributing to the Code
 
 All kinds of contributions are welcome! If you have an idea for a new feature, a bug fix, or an improvement, you could consider creating a pull request or consider start a discussion in Issues.
