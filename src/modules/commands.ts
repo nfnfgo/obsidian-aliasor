@@ -15,7 +15,7 @@ export class CommandsModule extends AliasorModule {
 
         this.p.addCommand({
             id: "exec-by-alias",
-            name: "Execute command by alias",
+            name: this.p.modules.i18n.t("commandName.exec-by-alias"),
             callback: () => {
                 this.execCommandHandler();
             },

@@ -67,7 +67,7 @@ export class SettingsModule extends AliasorModule {
 
         this.p.addCommand({
             id: "add-new-alias",
-            name: "Add New Alias",
+            name: this.p.modules.i18n.t("commandName.add-new-alias"),
             callback: () => {
                 this.addNewAliasCommandHandler();
             },

@@ -69,6 +69,10 @@
                     "button": "阅读文档"
                 }
             }
+        },
+        "commandName": {
+            "exec-by-alias": "通过别名执行命令",
+            "add-new-alias": "添加新别名"
         }
     }
 }

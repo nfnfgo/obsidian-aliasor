@@ -69,6 +69,10 @@
                     "button": "Read Docs"
                 }
             }
+        },
+        "commandName": {
+            "exec-by-alias": "Execute by Alias",
+            "add-new-alias": "Add New Alias"
         }
     }
 }
