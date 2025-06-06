@@ -1,6 +1,6 @@
 {
     "name": "aliasor",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "description": "Add alias for commonly used commands and execute it quickly.",
     "main": "main.js",
     "scripts": {
