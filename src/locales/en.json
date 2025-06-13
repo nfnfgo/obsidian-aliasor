@@ -35,9 +35,16 @@
                     "button": "New",
                     "inputLabel": "New Alias",
                     "inputDesc": "Please enter a new alias for the command {{command}}",
-                    "success": "Alias '{{alias}}' added successfully.",
+                    "success": "Alias \"{{alias}}\" added successfully.",
                     "title": "Set New Alias",
                     "confirm": "Create"
+                },
+                "addFile": {
+                    "title": "Set New File Alias",
+                    "inputLabel": "New File Alias",
+                    "inputDesc": "Please enter a new alias for file {{filename}}",
+                    "success": "File alias \"{{alias}}\" added successfully.",
+                    "noCurrentFile": "Could not get current file from workspace"
                 },
                 "sort": {
                     "name": "Sort by",
@@ -54,6 +61,8 @@
                 "noAliases": "No aliases found.",
                 "unrecognizedCommand": "[Unrecognized Command]",
                 "unknownCommandId": "[unknown-command-id]",
+                "unrecognizedFile": "[Unrecognized File]",
+                "invalidFilePath": "[invalid-file-path]",
                 "delete": "Delete"
             },
             "about": {
@@ -72,7 +81,8 @@
         },
         "commandName": {
             "exec-by-alias": "Execute by Alias",
-            "add-new-alias": "Add New Alias"
+            "add-new-alias": "Add New Alias",
+            "add-alias-for-current-file": "Add Alias for Current File"
         }
     }
 }

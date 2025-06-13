@@ -122,6 +122,11 @@ export class CommandsModule extends AliasorModule {
         new SelectAliasedCommandSuggestModal(
             this.p,
             (aliasInfo: AliasInfo) => {
+                // TODO
+                // Add support for other types of aliases
+                if (aliasInfo.type !== "command") {
+                    return;
+                }
                 if (aliasInfo.commandId === undefined) {
                     new Notice(
                         `Command ID for alias "${aliasInfo.alias}" is not defined.`,
@@ -179,6 +184,10 @@ class SelectAliasedCommandSuggestModal extends AliasorFuzzySuggestModal<AliasInf
         el.createEl("div", {
             text: item.item.alias,
         });
+        // TODO
+        if (item.item.type !== "command") {
+            return;
+        }
         el.createEl("small", {
             text: item.item.commandName ?? "Unknown Command",
         });
@@ -191,9 +200,13 @@ class SelectAliasedCommandSuggestModal extends AliasorFuzzySuggestModal<AliasInf
         const settingsModule = this.p.modules.settings;
         const commandsModule = this.p.modules.commands;
         if (settingsModule.settings.callableOnly) {
-            return items.filter((item) =>
-                commandsModule.isCommandCallable(item.commandId),
-            );
+            return items.filter((item) => {
+                // TODO
+                if (item.type !== "command") {
+                    return true;
+                }
+                commandsModule.isCommandCallable(item.commandId);
+            });
         }
         return items;
     }
