@@ -17,7 +17,7 @@ export class CommandsModule extends AliasorModule {
             id: "exec-by-alias",
             name: this.p.modules.i18n.t("commandName.exec-by-alias"),
             callback: () => {
-                this.execCommandHandler();
+                this.aliasTriggerHandler();
             },
         });
     }
@@ -50,11 +50,40 @@ export class CommandsModule extends AliasorModule {
     }
 
     /**
+     * Check if an alias is callable. Will automatically use different criteria
+     * based on the alias type.
+     *
+     * Returns:
+     * - `true` if the alias is callable.
+     * - `false` if the alias is not callable or the type of alias is not supported.
+     */
+    isAliasCallable(aliasInfo: AliasInfo): boolean {
+        // if alias is a command alias, check if the command is callable
+        if (aliasInfo.type == "command") {
+            return this.isCommandCallable(aliasInfo.commandId);
+        }
+
+        // if alias is a file alias, check if the file exists
+        if (aliasInfo.type == "file") {
+            return this.p.modules.utils.isValidPath(aliasInfo.filePath);
+        }
+
+        return false;
+    }
+
+    /**
      * Check if a command is callable.
      *
      * If a command has a checkable callback, this method will perform the check process.
      * Read [Obsidian documentation](https://docs.obsidian.md/Reference/TypeScript+API/Command)
      * for more information about command callbacks.
+     *
+     * Returns:
+     *
+     * - `true` if the command is callable.
+     * - `true` if command has no checkable callback.
+     * - `false` if the command is not callable.
+     * - `false` if the command does not exist.
      */
     isCommandCallable(commandId: string | undefined): boolean {
         if (!this.isCommandExists(commandId)) {
@@ -117,31 +146,56 @@ export class CommandsModule extends AliasorModule {
         modal.open();
     }
 
-    // TODO
-    execCommandHandler() {
+    /**
+     * Open a modal to select a command by its alias, then execute that selected command.
+     */
+    aliasTriggerHandler() {
         new SelectAliasedCommandSuggestModal(
             this.p,
             (aliasInfo: AliasInfo) => {
-                // TODO
-                // Add support for other types of aliases
-                if (aliasInfo.type !== "command") {
-                    return;
+                // const i18n = this.p.modules.i18n;
+                if (aliasInfo.type === "command") {
+                    this._triggerCommandAlias(aliasInfo);
+                } else if (aliasInfo.type === "file") {
+                    this._triggerFileAlias(aliasInfo);
+                } else {
+                    // new Notice(
+                    //     i18n.t("settings.alias.exec.typeNotFound", {
+                    //         type: aliasInfo.type,
+                    //     }),
+                    // );
                 }
-                if (aliasInfo.commandId === undefined) {
-                    new Notice(
-                        `Command ID for alias "${aliasInfo.alias}" is not defined.`,
-                    );
-                    return;
-                }
-                if (!this.isCommandExists(aliasInfo.commandId)) {
-                    new Notice(
-                        `Command with ID "${aliasInfo.commandId}" does not exists in this vault.`,
-                    );
-                }
-                this.executeCommandById(aliasInfo.commandId);
             },
             "Select an alias to execute...",
         ).open();
+    }
+
+    _triggerCommandAlias(aliasInfo: AliasInfo): void {
+        if (aliasInfo.type !== "command") {
+            return;
+        }
+        if (aliasInfo.command === undefined) {
+            new Notice(
+                `Command for alias "${aliasInfo.alias}" is not defined.`,
+            );
+            return;
+        }
+        this.executeCommandById(aliasInfo.commandId);
+    }
+
+    _triggerFileAlias(aliasInfo: AliasInfo): void {
+        if (aliasInfo.type !== "file") {
+            return;
+        }
+        if (aliasInfo.filePath === undefined) {
+            new Notice(
+                `File path for alias "${aliasInfo.alias}" is not defined.`,
+            );
+            return;
+        }
+        // TODO
+        // Implement the trigger of file alias, which is likely just to open that file
+        // this.p.modules.utils.openFileByPath(aliasInfo.filePath);
     }
 }
 
@@ -181,33 +235,40 @@ class SelectAliasedCommandSuggestModal extends AliasorFuzzySuggestModal<AliasInf
     placeholder = "Enter an alias...";
 
     renderSuggestion(item: FuzzyMatch<AliasInfo>, el: HTMLElement): void {
-        el.createEl("div", {
-            text: item.item.alias,
-        });
+        const aliasInfo = item.item;
+        const dispTitle = aliasInfo.alias;
+
         // TODO
-        if (item.item.type !== "command") {
-            return;
+        // Finish suggestion rendering logic
+        let dispDesc = "";
+        if (aliasInfo.type === "command") {
+            dispDesc = aliasInfo.commandName ?? dispDesc;
+        } else if (aliasInfo.type === "file") {
+            dispDesc = aliasInfo.filePath ?? dispDesc;
         }
+
+        el.createEl("div", {
+            text: dispTitle,
+        });
         el.createEl("small", {
             text: item.item.commandName ?? "Unknown Command",
         });
     }
 
     getItems(): AliasInfo[] {
-        const items = this.p.modules.settings.getAliasedCommands();
+        const items = this.p.modules.settings.getAliases();
 
         // Only show callable commands if the corresponding setting is enabled
         const settingsModule = this.p.modules.settings;
         const commandsModule = this.p.modules.commands;
+
+        // filter out non-callable aliases if the relevant setting is enabled
         if (settingsModule.settings.callableOnly) {
             return items.filter((item) => {
-                // TODO
-                if (item.type !== "command") {
-                    return true;
-                }
-                commandsModule.isCommandCallable(item.commandId);
+                return commandsModule.isAliasCallable(item);
             });
         }
+        // otherwise, return all aliases
         return items;
     }
 

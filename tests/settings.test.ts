@@ -82,7 +82,7 @@ describe("SettingsModule", () => {
     });
 
     it("getAliasedCommands returns correct info", () => {
-        const result = settingsModule.getAliasedCommands();
+        const result = settingsModule.getAliases();
         expect(result.some((a) => a.alias === "addal")).toBe(true);
     });
 

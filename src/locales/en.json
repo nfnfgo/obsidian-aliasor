@@ -39,6 +39,12 @@
                     "title": "Set New Alias",
                     "confirm": "Create"
                 },
+                "update": {
+                    "identical": "The alias \"{{alias}}\" is identical to the current alias.",
+                    "invalid": "The new alias \"{{alias}}\" is invalid.",
+                    "nonExist": "Alias \"{{alias}}\" does not exist.",
+                    "updated": "Alias \"{{oldAlias}}\" updated to \"{{newAlias}}\"."
+                },
                 "addFile": {
                     "title": "Set New File Alias",
                     "inputLabel": "New File Alias",
@@ -58,6 +64,12 @@
                     "name": "Filter",
                     "placeholder": "Type to filter..."
                 },
+                "exec": {
+                    "commandNotFound": "Command with ID \"{{commandId}}\" is unavailable in this vault.",
+                    "typeNotFound": "Could not trigger alias with type {{type}}."
+                },
+                "unknownAliasType": "Unknown Alias Type",
+                "unknownAliasTypeDesc": "The alias type is not valid.",
                 "noAliases": "No aliases found.",
                 "unrecognizedCommand": "[Unrecognized Command]",
                 "unknownCommandId": "[unknown-command-id]",

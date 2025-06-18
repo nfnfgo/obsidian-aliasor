@@ -1,6 +1,9 @@
 import type { TFile } from "obsidian";
 import { moment } from "obsidian";
 import { AliasorModule } from "./general";
+import { AliasorError } from "@/errors/general";
+
+export class KeyUpdateError extends AliasorError {}
 
 /**
  * Util functions for Aliasor.
@@ -25,6 +28,29 @@ export class UtilModule extends AliasorModule {
             if (i === query.length) return true;
         }
         return i === query.length;
+    }
+
+    /**
+     * Update an object's key from `oldKey` to `newKey`.
+     *
+     * Raises:
+     *
+     * - `KeyUpdateError` if `oldKey` does not exist in the object.
+     *
+     * Returns: `undefined`
+     */
+    static updateObjKey(
+        oldKey: string,
+        newKey: string,
+        obj: Record<string, any>,
+    ): void {
+        if (!(oldKey in obj)) {
+            throw new KeyUpdateError(
+                `Key "${oldKey}" does not exist in the object.`,
+            );
+        }
+        obj[newKey] = obj[oldKey];
+        delete obj[oldKey];
     }
 
     /**

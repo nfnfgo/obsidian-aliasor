@@ -12,6 +12,7 @@ import { AliasorError } from "@/errors/general";
 
 import { AliasorModule } from "./general";
 import { UtilModule } from "./util";
+import { KeyUpdateError } from "./util";
 
 import { AliasorConfirmModal } from "@/modals/general";
 
@@ -50,9 +51,28 @@ interface FileAliasInfo {
     type: "file";
     alias: string;
     filePath: string;
+    file?: TFile;
 }
 
 export type AliasInfo = CommandAliasInfo | FileAliasInfo;
+
+interface AliasDisplayInfo {
+    /**The alias string */
+    alias: string;
+    /**
+     * A string that should be readable to users and be a represents of the target.
+     *
+     * E.g. This field could be a command name or a file name etc.
+     */
+    name: string;
+    /**
+     * The unique identifier of the target of this alias.
+     * This ID may not be directly readable to users.
+     *
+     * E.g. This field could be the command ID or a path to a file.
+     */
+    identifier: string;
+}
 
 const DEFAULT_SETTINGS: AliasorSettings = {
     version: 1,
@@ -128,30 +148,44 @@ export class SettingsModule extends AliasorModule {
     }
 
     /**
-     * Get a full list of aliases and their corresponding commands,
+     * Get a list of alias of all types.
      * returned in an array of `AliasInfo` objects.
+     *
+     * For different types of aliases, this method will try to retrieve some
+     * extra info based on `alias` if those info exists, such as `Command` instance
+     * or a `TFile` instance.
      */
-    getAliasedCommands(): AliasInfo[] {
+    getAliases(): AliasInfo[] {
         const aliases = this.settings.aliases;
-        const aliasedCommands: AliasInfo[] = [];
+        const aliasInfoList: AliasInfo[] = [];
 
+        // add command aliases to return
         for (const [alias, commandId] of Object.entries(aliases)) {
+            // try to retrieve and attach corresponding Command instance if exists
             const command = this.p.modules.commands.getCommandById(commandId);
-            if (command) {
-                aliasedCommands.push({
-                    type: "command",
-                    alias,
-                    commandId,
-                    commandName: command.name,
-                    command,
-                });
-            } else {
-                // If the command is not found, still include the alias
-                aliasedCommands.push({ type: "command", alias, commandId });
-            }
+            aliasInfoList.push({
+                type: "command",
+                alias,
+                commandId,
+                commandName: command?.name ?? undefined,
+                command,
+            });
         }
 
-        return aliasedCommands;
+        // Add file aliases to return
+        for (const [alias, filePath] of Object.entries(
+            this.settings.fileAliases,
+        )) {
+            const file = this.p.modules.utils.getFileByPath(filePath);
+            aliasInfoList.push({
+                type: "file",
+                alias,
+                filePath,
+                file,
+            });
+        }
+
+        return aliasInfoList;
     }
 
     /**
@@ -212,16 +246,132 @@ export class SettingsModule extends AliasorModule {
         await this.saveSettings();
     }
 
+    /**
+     * Update the alias string of an existing alias setting.
+     *
+     * Throw:
+     *
+     * - `SettingUpdateError` if failed to update the alias.
+     *
+     * Will show an Obsidian `Notice` on UI if the update is successful.
+     */
     async updateAlias(oldAlias: string, newAlias: string): Promise<void> {
-        if (!this.settings.aliases[oldAlias]) {
-            throw new SettingUpdateError(`Alias "${oldAlias}" does not exist.`);
+        const i18n = this.p.modules.i18n;
+
+        // check before trying to update
+        if (oldAlias === newAlias) {
+            throw new SettingUpdateError(
+                i18n.t("settings.alias.update.identical", {
+                    alias: oldAlias,
+                }),
+            );
         }
-        if (this.settings.aliases[newAlias]) {
-            throw new SettingUpdateError(`Alias "${newAlias}" already exists.`);
+        if (!this.isValidNewAlias(newAlias)) {
+            throw new SettingUpdateError(
+                i18n.t("settings.alias.update.invalid", {
+                    alias: newAlias,
+                }),
+            );
         }
-        this.settings.aliases[newAlias] = this.settings.aliases[oldAlias];
-        delete this.settings.aliases[oldAlias];
+
+        let updated = false;
+
+        // define a list of objects that storing all the aliases info
+        const searchObjects = [
+            this.settings.aliases,
+            this.settings.fileAliases,
+        ];
+
+        for (const obj of searchObjects) {
+            try {
+                // will throw if key does not exist
+                UtilModule.updateObjKey(oldAlias, newAlias, obj);
+                updated = true;
+                // once updated in one object, we can stop searching
+                break;
+            } catch (e) {
+                if (e instanceof KeyUpdateError) {
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        if (!updated) {
+            throw new SettingUpdateError(
+                i18n.t("settings.alias.update.nonExist", {
+                    alias: oldAlias,
+                }),
+            );
+        }
+
+        new Notice(
+            i18n.t("settings.alias.update.success", {
+                oldAlias,
+                newAlias,
+            }),
+        );
+
         await this.saveSettings();
+    }
+
+    /**
+     * Return a set of info that used to display alias based on `AliasInfo` instance.
+     *
+     * This method will use the extra info reference like `Command` and `TFile` object ref
+     * in the `AliasInfo` instance. And will NOT refetch those info based on alias settings.
+     */
+    getAliasDisplayInfo(aliasInfo: AliasInfo): AliasDisplayInfo {
+        const i18n = this.p.modules.i18n;
+
+        let dispName = "";
+        let dispId = "";
+
+        // Command types
+        if (aliasInfo.type === "command") {
+            dispId = aliasInfo.commandId;
+            dispName =
+                aliasInfo.commandName ??
+                i18n.t("settings.alias.unrecognizedCommand");
+        }
+        // File types
+        else if (aliasInfo.type === "file") {
+            dispId = aliasInfo.filePath;
+            dispName =
+                aliasInfo.file?.name ??
+                i18n.t("settings.alias.unrecognizedFile");
+        }
+        // Unknown types
+        else {
+            dispName = i18n.t("settings.alias.unknownAliasType");
+            dispId = i18n.t("settings.alias.unknownAliasTypeDesc");
+        }
+
+        return { alias: aliasInfo.alias, name: dispName, identifier: dispId };
+    }
+
+    /**
+     * Check if an alias exists in the settings. Check will include
+     * all types of aliases.
+     */
+    isAliasExists(alias: string): boolean {
+        if (alias in this.settings.aliases) {
+            return true;
+        } else if (alias in this.settings.fileAliases) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if an alias is valid to be a new alias.
+     * - Check alias is not empty.
+     * - Check alias does not already exist.
+     */
+    isValidNewAlias(alias: string | undefined): boolean {
+        if (!alias) return false;
+        // Check if the alias is not empty and does not already exist
+        return alias.trim() !== "" && !this.isAliasExists(alias);
     }
 
     addNewAliasCommandHandler(onSuccess?: () => any): void {
@@ -255,30 +405,6 @@ export class SettingsModule extends AliasorModule {
         const modal = new NewFileAliasInputModal(this.p);
         modal.file = activeFile;
         modal.open();
-    }
-
-    /**
-     * Check if an alias exists in the settings. Check will include
-     * all types of aliases.
-     */
-    isAliasExists(alias: string): boolean {
-        if (alias in this.settings.aliases) {
-            return true;
-        } else if (alias in this.settings.fileAliases) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Check if an alias is valid to be a new alias.
-     * - Check alias is not empty.
-     * - Check alias does not already exist.
-     */
-    isValidNewAlias(alias: string | undefined): boolean {
-        if (!alias) return false;
-        // Check if the alias is not empty and does not already exist
-        return alias.trim() !== "" && !this.isAliasExists(alias);
     }
 
     /**
@@ -528,7 +654,7 @@ class AliasorSettingsTab extends PluginSettingTab {
         aliasTilesDiv.empty();
 
         // get all aliases
-        let entries = this.settingsModule.getAliasedCommands();
+        let entries = this.settingsModule.getAliases();
 
         // apply filter
         if (this.filterText) {
@@ -583,54 +709,22 @@ class AliasorSettingsTab extends PluginSettingTab {
 
         // Create tiles for each alias
         for (const info of entries) {
-            this._createAliasSettingTile(info, aliasTilesDiv);
+            this._displayAliasSettingTile(info, aliasTilesDiv);
         }
     }
 
-    private _createAliasSettingTile(
+    private _displayAliasSettingTile(
         info: AliasInfo,
         parentDiv?: HTMLElement,
     ): void {
-        // util plugin ref
-        const util = this.p.modules.utils;
-
-        // determine display title and description
-        let dispTitle = "";
-        let dispDesc = "";
-        if (info.type === "command") {
-            // Use command display name as title, command-id as description
-            const command =
-                info.command ??
-                this.p.modules.commands.getCommandById(info.commandId);
-            if (command) {
-                dispTitle = command.name;
-                dispDesc = command.id;
-            } else {
-                dispTitle = this.t("settings.alias.unrecognizedCommand");
-                dispDesc = info.commandId;
-            }
-        } else if (info.type === "file") {
-            const file = util.getFileByPath(info.filePath);
-            if (!file) {
-                // invalid file
-                dispTitle = this.t("settings.alias.unrecognizedFile");
-                dispDesc = info.filePath;
-            } else {
-                // valid file
-                // use file name as title, file path as description
-                dispTitle = file.name;
-                dispDesc = file.path;
-            }
-        } else {
-            dispTitle = "AliasResolveError";
-            dispDesc = "Unknown alias type encountered.";
-        }
+        const { name, identifier } =
+            this.settingsModule.getAliasDisplayInfo(info);
 
         // Create a new setting for the alias
         const containerEl = parentDiv ?? this.containerEl;
         new Setting(containerEl)
-            .setName(dispTitle)
-            .setDesc(dispDesc)
+            .setName(name)
+            .setDesc(identifier)
             .addText((text) => {
                 text.setValue(info.alias);
                 this.settingsModule.addInvalidNewAliasIndicatorToInput(
