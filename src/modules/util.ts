@@ -88,4 +88,29 @@ export class UtilModule extends AliasorModule {
     getCurrentFile(): TFile | undefined {
         return this.a.workspace.getActiveFile() ?? undefined;
     }
+
+    /**
+     * Try open a file in the Obsidian workspace.
+     */
+    async openFileInWorkspace(
+        file: TFile,
+        options?: { focusIfExists: boolean },
+    ): Promise<void> {
+        let focused = false;
+
+        // try refocus the existing leaf if option is set
+        if (options?.focusIfExists) {
+            this.a.workspace.iterateAllLeaves((leaf) => {
+                if (leaf.view.getState().file === file.path) {
+                    this.a.workspace.setActiveLeaf(leaf);
+                    focused = true;
+                }
+            });
+        }
+
+        // not focused yet, open the file
+        if (!focused) {
+            await this.a.workspace.getLeaf("tab").openFile(file);
+        }
+    }
 }

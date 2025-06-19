@@ -91,6 +91,13 @@
                 }
             }
         },
+        "command": {
+            "fileAlias": {
+                "notExist": "File \"{{filepath}}\" does not exist.",
+                "errorWhenOpen": "Error when opening file \"{{filepath}}\".",
+                "opened": "File \"{{filename}}\" opened successfully."
+            }
+        },
         "commandName": {
             "exec-by-alias": "Execute by Alias",
             "add-new-alias": "Add New Alias",

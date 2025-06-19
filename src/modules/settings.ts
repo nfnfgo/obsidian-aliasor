@@ -306,7 +306,7 @@ export class SettingsModule extends AliasorModule {
         }
 
         new Notice(
-            i18n.t("settings.alias.update.success", {
+            i18n.t("settings.alias.update.updated", {
                 oldAlias,
                 newAlias,
             }),

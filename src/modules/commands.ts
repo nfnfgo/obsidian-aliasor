@@ -183,19 +183,47 @@ export class CommandsModule extends AliasorModule {
         this.executeCommandById(aliasInfo.commandId);
     }
 
-    _triggerFileAlias(aliasInfo: AliasInfo): void {
+    async _triggerFileAlias(aliasInfo: AliasInfo) {
+        const util = this.p.modules.utils;
+        const i18n = this.p.modules.i18n;
+
+        // check before try opening file
         if (aliasInfo.type !== "file") {
             return;
         }
         if (aliasInfo.filePath === undefined) {
             new Notice(
-                `File path for alias "${aliasInfo.alias}" is not defined.`,
+                i18n.t("command.fileAlias.notExist", {
+                    filepath: aliasInfo.filePath,
+                }),
             );
             return;
         }
-        // TODO
-        // Implement the trigger of file alias, which is likely just to open that file
-        // this.p.modules.utils.openFileByPath(aliasInfo.filePath);
+        if (aliasInfo.file === undefined) {
+            new Notice(
+                i18n.t("command.fileAlias.notExist", {
+                    filepath: aliasInfo.filePath,
+                }),
+            );
+            return;
+        }
+
+        // try opening file and show a notice
+        try {
+            await util.openFileInWorkspace(aliasInfo.file);
+            new Notice(
+                i18n.t("command.fileAlias.opened", {
+                    filename: aliasInfo.file.name,
+                }),
+            );
+        } catch (error) {
+            new Notice(
+                i18n.t("command.fileAlias.errorWhenOpen", {
+                    filepath: aliasInfo.filePath,
+                }),
+            );
+            console.error(error);
+        }
     }
 }
 
@@ -235,24 +263,12 @@ class SelectAliasedCommandSuggestModal extends AliasorFuzzySuggestModal<AliasInf
     placeholder = "Enter an alias...";
 
     renderSuggestion(item: FuzzyMatch<AliasInfo>, el: HTMLElement): void {
+        const settingsModule = this.p.modules.settings;
         const aliasInfo = item.item;
-        const dispTitle = aliasInfo.alias;
+        const displayInfo = settingsModule.getAliasDisplayInfo(aliasInfo);
 
-        // TODO
-        // Finish suggestion rendering logic
-        let dispDesc = "";
-        if (aliasInfo.type === "command") {
-            dispDesc = aliasInfo.commandName ?? dispDesc;
-        } else if (aliasInfo.type === "file") {
-            dispDesc = aliasInfo.filePath ?? dispDesc;
-        }
-
-        el.createEl("div", {
-            text: dispTitle,
-        });
-        el.createEl("small", {
-            text: item.item.commandName ?? "Unknown Command",
-        });
+        el.createEl("div", { text: displayInfo.alias });
+        el.createEl("small", { text: displayInfo.name });
     }
 
     getItems(): AliasInfo[] {
