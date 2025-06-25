@@ -103,4 +103,81 @@ describe("SettingsModule", () => {
             "aliasor:add-new-alias",
         );
     });
+
+    describe("getAliasDisplayInfo", () => {
+        it("returns correct info for command alias", () => {
+            const aliasInfo = {
+                type: "command" as const,
+                alias: "myAlias",
+                commandId: "cmd-id",
+                commandName: "My Command",
+            };
+            const result = settingsModule.getAliasDisplayInfo(aliasInfo);
+            expect(result).toEqual({
+                alias: "myAlias",
+                name: "My Command",
+                identifier: "cmd-id",
+            });
+        });
+
+        it("returns fallback for command alias with missing name", () => {
+            const aliasInfo = {
+                type: "command" as const,
+                alias: "myAlias",
+                commandId: "cmd-id",
+            };
+            const result = settingsModule.getAliasDisplayInfo(aliasInfo);
+            expect(result).toEqual({
+                alias: "myAlias",
+                name: "settings.alias.unrecognizedCommand",
+                identifier: "cmd-id",
+            });
+        });
+
+        it("returns correct info for file alias", () => {
+            const mockTFile = {
+                name: "file.md",
+                path: "/path/to/file.md",
+            } as any;
+            const aliasInfo = {
+                type: "file" as const,
+                alias: "fileAlias",
+                filePath: "/path/to/file.md",
+                file: mockTFile,
+            };
+            const result = settingsModule.getAliasDisplayInfo(aliasInfo);
+            expect(result).toEqual({
+                alias: "fileAlias",
+                name: "file.md",
+                identifier: "/path/to/file.md",
+            });
+        });
+
+        it("returns fallback for file alias with missing file", () => {
+            const aliasInfo = {
+                type: "file" as const,
+                alias: "fileAlias",
+                filePath: "/path/to/file.md",
+            };
+            const result = settingsModule.getAliasDisplayInfo(aliasInfo);
+            expect(result).toEqual({
+                alias: "fileAlias",
+                name: "settings.alias.unrecognizedFile",
+                identifier: "/path/to/file.md",
+            });
+        });
+
+        it("returns fallback for unknown type", () => {
+            const aliasInfo = {
+                type: "unknown",
+                alias: "weird",
+            } as any;
+            const result = settingsModule.getAliasDisplayInfo(aliasInfo);
+            expect(result).toEqual({
+                alias: "weird",
+                name: "settings.alias.unknownAliasType",
+                identifier: "settings.alias.unknownAliasTypeDesc",
+            });
+        });
+    });
 });

@@ -139,4 +139,74 @@ describe("CommandsModule", () => {
         pluginMock.app.commands.commands["cmd5"] = cmd5;
         expect(commandsModule.isCommandCallable("cmd5")).toBe(true);
     });
+
+    it("_triggerFileAlias calls util.openFileInWorkspace with the file", async () => {
+        const mockVault = {
+            adapter: {},
+            configDir: "",
+            getName: () => "",
+            getFileByPath: () => undefined,
+        };
+        const mockFile = {
+            name: "file.md",
+            path: "/path/to/file.md",
+            stat: { ctime: 0, mtime: 0, size: 0 },
+            basename: "file",
+            extension: "md",
+            vault: mockVault,
+            parent: {},
+        } as any;
+        const openFileInWorkspace = vi.fn();
+        const i18nT = vi.fn((key) => key);
+        // Patch pluginMock to provide modules.utils and modules.i18n
+        pluginMock.modules = {
+            utils: { openFileInWorkspace },
+            i18n: { t: i18nT },
+        };
+        // Patch commandsModule.p to pluginMock (protected, but accessible in test)
+        // @ts-expect-error test hack
+        commandsModule.p = pluginMock;
+        const aliasInfo = {
+            type: "file" as const,
+            alias: "fileAlias",
+            filePath: "/path/to/file.md",
+            file: mockFile,
+        };
+        await commandsModule._triggerFileAlias(aliasInfo);
+        expect(openFileInWorkspace).toHaveBeenCalledWith(mockFile);
+    });
+
+    it("_triggerCommandAlias calls executeCommandById for valid command alias", () => {
+        const executeCommandById = vi.fn();
+        pluginMock.app.commands.executeCommandById = executeCommandById;
+        // Patch commandsModule.obsCmd in case it was replaced
+        commandsModule.obsCmd = pluginMock.app.commands;
+        // Patch commandsModule.p to pluginMock (protected, but accessible in test)
+        // @ts-expect-error test hack
+        commandsModule.p = pluginMock;
+        const aliasInfo = {
+            type: "command" as const,
+            alias: "myAlias",
+            commandId: "test-cmd",
+            command: { id: "test-cmd", name: "Test Command" },
+        };
+        commandsModule._triggerCommandAlias(aliasInfo);
+        expect(executeCommandById).toHaveBeenCalledWith("test-cmd");
+    });
+
+    it("_triggerCommandAlias does not call executeCommandById if command is missing", () => {
+        const executeCommandById = vi.fn();
+        pluginMock.app.commands.executeCommandById = executeCommandById;
+        commandsModule.obsCmd = pluginMock.app.commands;
+        // @ts-expect-error test hack
+        commandsModule.p = pluginMock;
+        const aliasInfo = {
+            type: "command" as const,
+            alias: "myAlias",
+            commandId: "test-cmd",
+            command: undefined,
+        };
+        commandsModule._triggerCommandAlias(aliasInfo);
+        expect(executeCommandById).not.toHaveBeenCalled();
+    });
 });

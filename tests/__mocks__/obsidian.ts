@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { TFile } from "obsidian";
+
 export class PluginSettingTab {}
 export class Setting {
     setName() {
@@ -17,7 +20,6 @@ export class Setting {
     }
 }
 export class Notice {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     constructor(_msg: any) {}
 }
 export class Modal {
@@ -31,18 +33,46 @@ export class App {
     constructor() {
         this.commands = {
             commands: {},
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            executeCommandById: (_id) => {},
+            executeCommandById: (_id: string) => {},
+        };
+        // Mock leaf object
+        const mockLeaf = {
+            view: {
+                getState: () => ({ file: "test/path/mocked-file.md" }),
+            },
         };
         this.workspace = {
             activeEditor: {
                 editor: {},
             },
+            getActiveFile: (): TFile => {
+                const f = new TFile();
+                f.name = "mocked-file.md";
+                f.basename = "mocked-file";
+                f.extension = "md";
+                f.path = "test/path/mocked-file.md";
+                return f;
+            },
+            iterateAllLeaves: (cb: (leaf: any) => void): void => {
+                cb(mockLeaf);
+            },
+            setActiveLeaf: (_leaf: any): void => {},
+            getLeaf: (
+                _type: string,
+            ): { openFile: (file: TFile) => Promise<void> } => ({
+                openFile: async (_file: TFile) => {},
+            }),
         };
     }
     commands: {
         commands: Record<string, any>;
         executeCommandById: (id: string) => void;
     };
-    workspace: { activeEditor: { editor: any } };
+    workspace: {
+        activeEditor: { editor: any };
+        getActiveFile: () => TFile;
+        iterateAllLeaves: (cb: (leaf: any) => void) => void;
+        setActiveLeaf: (leaf: any) => void;
+        getLeaf: (type: string) => { openFile: (file: TFile) => Promise<void> };
+    };
 }
