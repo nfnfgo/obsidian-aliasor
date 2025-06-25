@@ -54,9 +54,9 @@
                 },
                 "sort": {
                     "name": "Sort by",
-                    "alias": "Alias",
-                    "commandId": "Command ID",
-                    "commandName": "Command Name",
+                    "byAlias": "Alias",
+                    "byName": "Name",
+                    "byIdentifier": "Identifier",
                     "ascend": "Ascend",
                     "descend": "Descend"
                 },

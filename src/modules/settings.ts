@@ -473,7 +473,7 @@ class AliasorSettingsTab extends PluginSettingTab {
     settingsModule: SettingsModule;
     t: (key: string, options?: any) => string;
 
-    private sortCriteria: "alias" | "commandId" | "commandName" = "alias";
+    private sortCriteria: "alias" | "name" | "identifier" = "alias";
     private sortAscend = true;
     private filterText = "";
 
@@ -595,15 +595,15 @@ class AliasorSettingsTab extends PluginSettingTab {
             .addDropdown((dropdown) => {
                 dropdown.addOption(
                     "alias",
-                    this.t("settings.alias.sort.alias"),
+                    this.t("settings.alias.sort.byAlias"),
                 );
                 dropdown.addOption(
-                    "commandId",
-                    this.t("settings.alias.sort.commandId"),
+                    "name",
+                    this.t("settings.alias.sort.byName"),
                 );
                 dropdown.addOption(
-                    "commandName",
-                    this.t("settings.alias.sort.commandName"),
+                    "identifier",
+                    this.t("settings.alias.sort.byIdentifier"),
                 );
                 dropdown.setValue(this.sortCriteria);
                 dropdown.onChange((value) => {
@@ -685,17 +685,21 @@ class AliasorSettingsTab extends PluginSettingTab {
 
         // Apply sorting
         entries.sort((a, b) => {
-            let aKey = "",
-                bKey = "";
+            const settingsModule = this.settingsModule;
+            const dispA = settingsModule.getAliasDisplayInfo(a);
+            const dispB = settingsModule.getAliasDisplayInfo(b);
+
+            let aKey = "";
+            let bKey = "";
             if (this.sortCriteria === "alias") {
-                aKey = a.alias;
-                bKey = b.alias;
+                aKey = dispA.alias;
+                bKey = dispB.alias;
+            } else if (this.sortCriteria === "name") {
+                aKey = dispA.name;
+                bKey = dispB.name;
             } else {
-                // TODO
-                // Implement sorting that could deal with multiple alias types
-                // Like file and command.
-                aKey = a.alias;
-                bKey = b.alias;
+                aKey = dispA.identifier;
+                bKey = dispB.identifier;
             }
             const cmp = aKey.localeCompare(bKey);
             return this.sortAscend ? cmp : -cmp;
