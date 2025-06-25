@@ -36,9 +36,19 @@ interface AliasorModalProps {
 /**
  * Usage:
  *
- * Override `setBodyContent()`
+ * - Override `title`, `danger` or any other properties on demand.
+ *
+ * You could also pass some of this properties in the `constructor`,
+ * which will always take precedence over the instance properties.
+ * Check out constructor parameters for more details.
+ *
+ * - Override `setBodyContent()`.
+ *
+ * This method will be called before the modal is opened. So it's safe to set properties
+ * of `this` and use them in `setBodyContent()`.
  */
 export abstract class AliasorConfirmModal extends Modal {
+    // override these properties in subclass if needed
     public title: string | undefined = undefined;
     public danger = false;
     public confirmText = "OK";
@@ -108,20 +118,3 @@ export abstract class AliasorConfirmModal extends Modal {
      */
     protected abstract setBodyContent(contentEl: HTMLElement): void;
 }
-
-// export abstract class AliasorSuggestModal<T> extends SuggestModal<T> {
-//     protected placeholder = "Select an item...";
-
-//     constructor(
-//         protected p: AliasorPlugin,
-//         protected callback: (item: T) => void,
-//         placeholder?: string,
-//     ) {
-//         super(p.app);
-//         this.setPlaceholder(placeholder ?? this.placeholder);
-//     }
-
-//     onChooseSuggestion(item: T): void {
-//         this.callback(item);
-//     }
-// }

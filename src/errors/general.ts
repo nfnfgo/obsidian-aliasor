@@ -1,7 +1,13 @@
+/**
+ * Extended error class for Aliasor.
+ *
+ * To create a new custom error, first extend this class,
+ * then override the `toReadableString` method if needed.
+ */
 export class AliasorError extends Error {
+    public name = "AliasorError";
     constructor(message: string, options?: ErrorOptions) {
         super(message, options);
-        this.name = "AliasorError";
     }
 
     /**
