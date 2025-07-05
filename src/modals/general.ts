@@ -82,9 +82,11 @@ export abstract class AliasorConfirmModal extends Modal {
      * before it being shown on the UI.
      */
     private _loadContent(): void {
-        // add title if needed
         this.contentEl.empty();
-        if (this.title) this.contentEl.createEl("h2", { text: this.title });
+        // add title if needed
+        if (this.title) {
+            new Setting(this.contentEl).setName(this.title).setHeading();
+        }
         // call overriden method to set body content
         this.setBodyContent(this.contentEl);
         // add buttons

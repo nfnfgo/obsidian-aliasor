@@ -1,5 +1,5 @@
 import type { TFile } from "obsidian";
-import { moment } from "obsidian";
+import { getLanguage } from "obsidian";
 import { AliasorModule } from "./general";
 import { AliasorError } from "@/errors/general";
 
@@ -61,7 +61,7 @@ export class UtilModule extends AliasorModule {
      */
     static getObsidianLanguage(): string {
         // Obsidian's language is stored in the app's settings
-        return moment.locale() || "en";
+        return getLanguage();
     }
 
     /**

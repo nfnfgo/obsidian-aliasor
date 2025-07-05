@@ -499,7 +499,9 @@ class AliasorSettingsTab extends PluginSettingTab {
 
     private _displayGeneralSettings(parentDiv?: HTMLElement): void {
         const container = parentDiv ?? this.containerEl;
-        container.createEl("h2", { text: this.t("settings.general.title") });
+        new Setting(container)
+            .setName(this.t("settings.general.title"))
+            .setHeading();
         new Setting(container)
             .setName(this.t("settings.general.callableOnly.name"))
             .setDesc(this.t("settings.general.callableOnly.desc"))
@@ -515,7 +517,9 @@ class AliasorSettingsTab extends PluginSettingTab {
 
     private _displayConfigImportExport(parentDiv?: HTMLElement): void {
         const container = parentDiv ?? this.containerEl;
-        container.createEl("h2", { text: this.t("settings.config.title") });
+        new Setting(container)
+            .setName(this.t("settings.config.title"))
+            .setHeading();
         new Setting(container)
             .setName(this.t("settings.config.export.name"))
             .setDesc(this.t("settings.config.export.desc"))
@@ -558,9 +562,9 @@ class AliasorSettingsTab extends PluginSettingTab {
             });
         }
         aliasManagementDiv.empty();
-        aliasManagementDiv.createEl("h2", {
-            text: this.t("settings.alias.title"),
-        });
+        new Setting(aliasManagementDiv)
+            .setName(this.t("settings.alias.title"))
+            .setHeading();
         this._displayAddAliasTile(aliasManagementDiv);
         this._displaySortTile(aliasManagementDiv);
         this._displayFilterTile(aliasManagementDiv);
@@ -756,7 +760,9 @@ class AliasorSettingsTab extends PluginSettingTab {
 
     private _displayAbout(parentDiv?: HTMLElement) {
         const container = parentDiv ?? this.containerEl;
-        container.createEl("h2", { text: this.t("settings.about.title") });
+        new Setting(container)
+            .setName(this.t("settings.about.title"))
+            .setHeading();
 
         const links = [
             {
