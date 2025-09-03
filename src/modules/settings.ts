@@ -500,9 +500,6 @@ class AliasorSettingsTab extends PluginSettingTab {
     private _displayGeneralSettings(parentDiv?: HTMLElement): void {
         const container = parentDiv ?? this.containerEl;
         new Setting(container)
-            .setName(this.t("settings.general.title"))
-            .setHeading();
-        new Setting(container)
             .setName(this.t("settings.general.callableOnly.name"))
             .setDesc(this.t("settings.general.callableOnly.desc"))
             .setTooltip(this.t("settings.general.callableOnly.tooltip"))
@@ -517,9 +514,6 @@ class AliasorSettingsTab extends PluginSettingTab {
 
     private _displayConfigImportExport(parentDiv?: HTMLElement): void {
         const container = parentDiv ?? this.containerEl;
-        new Setting(container)
-            .setName(this.t("settings.config.title"))
-            .setHeading();
         new Setting(container)
             .setName(this.t("settings.config.export.name"))
             .setDesc(this.t("settings.config.export.desc"))
