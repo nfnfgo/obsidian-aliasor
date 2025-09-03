@@ -14,13 +14,13 @@
             "config": {
                 "title": "Config Import/Export",
                 "export": {
-                    "name": "Export To Clipboard",
+                    "name": "Export to clipboard",
                     "desc": "Exported info could be imported to another vault.",
                     "button": "Export",
                     "success": "Aliases exported to clipboard."
                 },
                 "import": {
-                    "name": "Import From Clipboard",
+                    "name": "Import from clipboard",
                     "desc": "Merge aliases info from clipboard, duplicated Aliases will be ignored. Aliases could be imported even if the corresponding command is not exist in this vault.",
                     "button": "Import",
                     "success": "Aliases imported from clipboard.",
@@ -30,13 +30,13 @@
             "alias": {
                 "title": "Alias Management",
                 "add": {
-                    "name": "Add New Alias",
+                    "name": "Add new alias",
                     "desc": "Add a new alias for a command.",
                     "button": "New",
-                    "inputLabel": "New Alias",
+                    "inputLabel": "New alias",
                     "inputDesc": "Please enter a new alias for the command {{command}}",
                     "success": "Alias \"{{alias}}\" added successfully.",
-                    "title": "Set New Alias",
+                    "title": "Set new alias",
                     "confirm": "Create"
                 },
                 "update": {
@@ -46,7 +46,7 @@
                     "updated": "Alias \"{{oldAlias}}\" updated to \"{{newAlias}}\"."
                 },
                 "addFile": {
-                    "title": "Set New File Alias",
+                    "title": "Set new file alias",
                     "inputLabel": "New File Alias",
                     "inputDesc": "Please enter a new alias for file {{filename}}",
                     "success": "File alias \"{{alias}}\" added successfully.",
@@ -80,9 +80,9 @@
             "about": {
                 "title": "About",
                 "bug": {
-                    "name": "Bug Report & Feature Request",
+                    "name": "Bug report & Feature request",
                     "desc": "View the source code, report a bug or send a feature request.",
-                    "button": "Open New Issue"
+                    "button": "Open new issue"
                 },
                 "doc": {
                     "name": "Documentation",
@@ -99,9 +99,9 @@
             }
         },
         "commandName": {
-            "exec-by-alias": "Execute by Alias",
-            "add-new-alias": "Add New Alias",
-            "add-alias-for-current-file": "Add Alias for Current File"
+            "exec-by-alias": "Execute by alias",
+            "add-new-alias": "Add new alias",
+            "add-alias-for-current-file": "Add alias for current file"
         }
     }
 }
